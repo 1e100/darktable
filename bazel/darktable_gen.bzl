@@ -113,6 +113,17 @@ def darktable_generated_headers():
     )
 
     native.genrule(
+        name = "generate_darktablerc",
+        srcs = [
+            "//tools:generate_darktablerc_xsl",
+            ":darktableconfig.dtd",
+            ":darktableconfig.xml",
+        ],
+        outs = ["darktablerc"],
+        cmd = "xsltproc --nonet $(location //tools:generate_darktablerc_xsl) $(location :darktableconfig.xml) > $@",
+    )
+
+    native.genrule(
         name = "styles_string_h",
         srcs = ["//data:runtime_data", "//tools:generate_styles_string"],
         outs = ["styles_string.h"],

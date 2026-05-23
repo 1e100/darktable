@@ -1,5 +1,6 @@
 load("//bazel:darktable_gen.bzl", "darktable_generated_headers")
-load("//bazel:dt_cc.bzl", "dt_core_lib")
+load("//bazel:dt_cc.bzl", "dt_core_lib", "dt_iop_modules", "dt_output_plugin_modules", "dt_plugin_group", "dt_plugin_modules", "dt_plugin_runtime_layout")
+load("//bazel:dt_runtime.bzl", "dt_runtime_tree")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -16,6 +17,16 @@ COMMON_INCLUDES = [
     ".",
     "external",
     "external/OpenCL",
+]
+
+PLUGIN_INCLUDES = COMMON_INCLUDES + [
+    "imageio/format",
+    "imageio/storage",
+    "iop",
+    "libs",
+    "libs/scopes",
+    "libs/tools",
+    "views",
 ]
 
 CORE_HDRS = [
@@ -277,6 +288,33 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "darktable_plugin_headers",
+    hdrs = glob([
+        "chart/*.h",
+        "external/*.c",
+        "external/libxcf/*.h",
+        "imageio/format/*.h",
+        "imageio/storage/*.h",
+        "iop/**/*.c",
+        "iop/**/*.h",
+        "iop/*.h",
+        "libs/*.h",
+        "libs/**/*.c",
+        "libs/**/*.h",
+        "libs/scopes/*.h",
+        "libs/tools/*.h",
+        "views/*.h",
+    ], allow_empty = True),
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES + ["."],
+    deps = [
+        ":darktable_public_headers",
+        "@darktable_linux_system_probe//:pkg",
+        "@gtk_stack//:pkg",
+    ],
+)
+
 CORE_DEPS = [
     ":darktable_public_headers",
     "@lautoc//:lautoc",
@@ -523,6 +561,363 @@ cc_binary(
     ],
 )
 
+PLUGIN_DEPS = CORE_DEPS + [
+    ":darktable_core_compile",
+    ":darktable_plugin_headers",
+    ":potrace_system",
+]
+
+IOP_PLUGINS = [
+    ("colorharmonizer", "iop/colorharmonizer.c", []),
+    ("rawprepare", "iop/rawprepare.c", []),
+    ("soften", "iop/soften.c", []),
+    ("bloom", "iop/bloom.c", []),
+    ("highpass", "iop/highpass.c", []),
+    ("lowpass", "iop/lowpass.c", []),
+    ("shadhi", "iop/shadhi.c", []),
+    ("colorreconstruct", "iop/colorreconstruction.c", []),
+    ("tonemap", "iop/tonemap.cc", []),
+    ("tonecurve", "iop/tonecurve.c", []),
+    ("colisa", "iop/colisa.c", []),
+    ("gamma", "iop/gamma.c", []),
+    ("temperature", "iop/temperature.c", []),
+    ("colorcorrection", "iop/colorcorrection.c", []),
+    ("basicadj", "iop/basicadj.c", []),
+    ("exposure", "iop/exposure.c", []),
+    ("equalizer", "iop/equalizer.c", []),
+    ("rgbcurve", "iop/rgbcurve.c", []),
+    ("colorbalance", "iop/colorbalance.c", []),
+    ("colorin", "iop/colorin.c", []),
+    ("colorout", "iop/colorout.c", []),
+    ("colorchecker", "iop/colorchecker.c", []),
+    ("clipping", "iop/clipping.c", []),
+    ("enlargecanvas", "iop/enlargecanvas.c", []),
+    ("crop", "iop/crop.c", []),
+    ("sharpen", "iop/sharpen.c", []),
+    ("dither", "iop/dither.c", []),
+    ("monochrome", "iop/monochrome.c", []),
+    ("basecurve", "iop/basecurve.c", []),
+    ("colorzones", "iop/colorzones.c", []),
+    ("highlights", "iop/highlights.c", []),
+    ("overlay", "iop/overlay.c", []),
+    ("rawoverexposed", "iop/rawoverexposed.c", []),
+    ("velvia", "iop/velvia.c", []),
+    ("vignette", "iop/vignette.c", []),
+    ("splittoning", "iop/splittoning.c", []),
+    ("grain", "iop/grain.c", []),
+    ("clahe", "iop/clahe.c", []),
+    ("bilateral", "iop/bilateral.cc", []),
+    ("profile_gamma", "iop/profile_gamma.c", []),
+    ("colortransfer", "iop/colortransfer.c", []),
+    ("colormapping", "iop/colormapping.c", []),
+    ("channelmixer", "iop/channelmixer.c", []),
+    ("graduatednd", "iop/graduatednd.c", []),
+    ("relight", "iop/relight.c", []),
+    ("zonesystem", "iop/zonesystem.c", []),
+    ("demosaic", "iop/demosaic.c", ["iop/demosaicing/amaze.cc"]),
+    ("rotatepixels", "iop/rotatepixels.c", []),
+    ("scalepixels", "iop/scalepixels.c", []),
+    ("atrous", "iop/atrous.c", []),
+    ("cacorrect", "iop/cacorrect.c", []),
+    ("overexposed", "iop/overexposed.c", []),
+    ("hotpixels", "iop/hotpixels.c", []),
+    ("lowlight", "iop/lowlight.c", []),
+    ("spots", "iop/spots.c", []),
+    ("retouch", "iop/retouch.c", []),
+    ("liquify", "iop/liquify.c", []),
+    ("rawdenoise", "iop/rawdenoise.c", []),
+    ("borders", "iop/borders.c", []),
+    ("nlmeans", "iop/nlmeans.c", []),
+    ("colorcontrast", "iop/colorcontrast.c", []),
+    ("levels", "iop/levels.c", []),
+    ("rgblevels", "iop/rgblevels.c", []),
+    ("colorize", "iop/colorize.c", []),
+    ("invert", "iop/invert.c", []),
+    ("vibrance", "iop/vibrance.c", []),
+    ("flip", "iop/flip.c", []),
+    ("finalscale", "iop/finalscale.c", []),
+    ("globaltonemap", "iop/globaltonemap.c", []),
+    ("bilat", "iop/bilat.c", []),
+    ("denoiseprofile", "iop/denoiseprofile.c", []),
+    ("defringe", "iop/defringe.c", []),
+    ("ashift", "iop/ashift.c", []),
+    ("hazeremoval", "iop/hazeremoval.c", []),
+    ("filmic", "iop/filmic.c", []),
+    ("mask_manager", "iop/mask_manager.c", []),
+    ("lut3d", "iop/lut3d.c", []),
+    ("toneequal", "iop/toneequal.c", []),
+    ("filmicrgb", "iop/filmicrgb.c", []),
+    ("negadoctor", "iop/negadoctor.c", []),
+    ("channelmixerrgb", "iop/channelmixerrgb.c", ["chart/common.c"]),
+    ("censorize", "iop/censorize.c", []),
+    ("colorbalancergb", "iop/colorbalancergb.c", []),
+    ("cacorrectrgb", "iop/cacorrectrgb.c", []),
+    ("diffuse", "iop/diffuse.c", []),
+    ("blurs", "iop/blurs.c", []),
+    ("sigmoid", "iop/sigmoid.c", []),
+    ("agx", "iop/agx.c", []),
+    ("primaries", "iop/primaries.c", []),
+    ("colorequal", "iop/colorequal.c", []),
+    ("rasterfile", "iop/rasterfile.c", []),
+    ("watermark", "iop/watermark.c", []),
+    ("lens", "iop/lens.cc", []),
+]
+
+dt_iop_modules(
+    modules = IOP_PLUGINS,
+    copts = COMMON_COPTS,
+    includes = PLUGIN_INCLUDES,
+    deps = PLUGIN_DEPS,
+)
+
+dt_plugin_group(
+    name = "iop_plugins",
+    modules = [module[0] for module in IOP_PLUGINS],
+)
+
+dt_plugin_runtime_layout(
+    name = "iop_plugin_runtime_layout",
+    destdir = "plugins",
+    modules = [module[0] for module in IOP_PLUGINS],
+)
+
+VIEW_PLUGINS = [
+    ("darkroom", ["views/darkroom.c"]),
+    ("lighttable", ["views/lighttable.c"]),
+    ("slideshow", ["views/slideshow.c"]),
+    ("tethering", ["views/tethering.c"]),
+]
+
+dt_plugin_modules(
+    modules = VIEW_PLUGINS,
+    copts = COMMON_COPTS + [
+        "-include",
+        "views/view_api.h",
+    ],
+    includes = PLUGIN_INCLUDES,
+    deps = PLUGIN_DEPS,
+)
+
+dt_plugin_group(
+    name = "view_plugins",
+    modules = [module[0] for module in VIEW_PLUGINS],
+)
+
+dt_plugin_runtime_layout(
+    name = "view_plugin_runtime_layout",
+    destdir = "views",
+    modules = [module[0] for module in VIEW_PLUGINS],
+)
+
+LIGHTTABLE_PLUGINS = [
+    ("import", ["libs/import.c"]),
+    ("export", ["libs/export.c", "libs/export_metadata.c"]),
+    ("copy_history", ["libs/copy_history.c"]),
+    ("styles", ["libs/styles.c"]),
+    ("tagging", ["libs/tagging.c"]),
+    ("image", ["libs/image.c"]),
+    ("select", ["libs/select.c"]),
+    ("collect", ["libs/collect.c"]),
+    ("recentcollect", ["libs/recentcollect.c"]),
+    ("filtering", ["libs/filtering.c"]),
+    ("metadata", ["libs/metadata.c"]),
+    ("metadata_view", ["libs/metadata_view.c"]),
+    ("navigation", ["libs/navigation.c"]),
+    ("histogram", ["libs/histogram.c", "libs/scopes/histogram.c", "libs/scopes/waveform.c", "libs/scopes/vectorscope.c", "libs/scopes/split.c"]),
+    ("history", ["libs/history.c"]),
+    ("snapshots", ["libs/snapshots.c"]),
+    ("modulegroups", ["libs/modulegroups.c"]),
+    ("backgroundjobs", ["libs/backgroundjobs.c"]),
+    ("colorpicker", ["libs/colorpicker.c"]),
+    ("masks", ["libs/masks.c"]),
+    ("session", ["libs/session.c"]),
+    ("duplicate", ["libs/duplicate.c"]),
+    ("ioporder", ["libs/ioporder.c"]),
+    ("viewswitcher", ["libs/tools/viewswitcher.c"]),
+    ("darktable_label", ["libs/tools/darktable.c"]),
+    ("colorlabels", ["libs/tools/colorlabels.c"]),
+    ("ratings", ["libs/tools/ratings.c"]),
+    ("filter", ["libs/tools/filter.c"]),
+    ("lighttable_mode", ["libs/tools/lighttable.c"]),
+    ("view_toolbox", ["libs/tools/view_toolbox.c"]),
+    ("module_toolbox", ["libs/tools/module_toolbox.c"]),
+    ("filmstrip", ["libs/tools/filmstrip.c"]),
+    ("hinter", ["libs/tools/hinter.c"]),
+    ("global_toolbox", ["libs/tools/global_toolbox.c"]),
+    ("timeline", ["libs/tools/timeline.c"]),
+    ("image_infos", ["libs/tools/image_infos.c"]),
+    ("log_history", ["libs/tools/log_history.c"]),
+    ("gamepad", ["libs/tools/gamepad.c"]),
+    ("camera", ["libs/camera.c"]),
+    ("live_view", ["libs/live_view.c"]),
+    ("geotagging", ["libs/geotagging.c"]),
+]
+
+dt_plugin_modules(
+    modules = LIGHTTABLE_PLUGINS,
+    copts = COMMON_COPTS + [
+        "-include",
+        "libs/lib_api.h",
+    ],
+    includes = PLUGIN_INCLUDES,
+    deps = PLUGIN_DEPS,
+)
+
+dt_plugin_group(
+    name = "lighttable_plugins",
+    modules = [module[0] for module in LIGHTTABLE_PLUGINS],
+)
+
+dt_plugin_runtime_layout(
+    name = "lighttable_plugin_runtime_layout",
+    destdir = "plugins/lighttable",
+    modules = [module[0] for module in LIGHTTABLE_PLUGINS],
+)
+
+IMAGEIO_FORMAT_PLUGINS = [
+    ("copy_format", "copy", ["imageio/format/copy.c"], []),
+    ("jpeg_format", "jpeg", ["imageio/format/jpeg.c"], []),
+    ("pdf_format", "pdf", ["imageio/format/pdf.c"], []),
+    ("png_format", "png", ["imageio/format/png.c"], []),
+    ("ppm_format", "ppm", ["imageio/format/ppm.c"], []),
+    ("pfm_format", "pfm", ["imageio/format/pfm.c"], []),
+    ("tiff_format", "tiff", ["imageio/format/tiff.c"], []),
+    ("jxl_format", "jpegxl", ["imageio/format/jxl.c"], []),
+    ("heif_format", "heif", ["imageio/format/heif.c"], []),
+    ("webp_format", "webp", ["imageio/format/webp.c"], []),
+    ("exr_format", "exr", ["imageio/format/exr.cc"], []),
+    ("j2k_format", "j2k", ["imageio/format/j2k.c"], []),
+    ("avif_format", "avif", ["imageio/format/avif.c"], []),
+    ("xcf_format", "xcf", ["imageio/format/xcf.c"], ["@libxcf//:xcf"]),
+]
+
+dt_output_plugin_modules(
+    modules = IMAGEIO_FORMAT_PLUGINS,
+    copts = COMMON_COPTS + [
+        "-include",
+        "imageio/format/imageio_format_api.h",
+    ],
+    includes = PLUGIN_INCLUDES,
+    deps = PLUGIN_DEPS,
+)
+
+dt_plugin_group(
+    name = "imageio_format_plugins",
+    modules = [module[1] for module in IMAGEIO_FORMAT_PLUGINS],
+)
+
+dt_plugin_runtime_layout(
+    name = "imageio_format_plugin_runtime_layout",
+    destdir = "plugins/imageio/format",
+    modules = [module[1] for module in IMAGEIO_FORMAT_PLUGINS],
+)
+
+IMAGEIO_STORAGE_PLUGINS = [
+    ("disk", ["imageio/storage/disk.c"]),
+    ("email", ["imageio/storage/email.c"]),
+    ("gallery", ["imageio/storage/gallery.c"]),
+    ("latex", ["imageio/storage/latex.c"]),
+    ("piwigo", ["imageio/storage/piwigo.c"]),
+]
+
+dt_plugin_modules(
+    modules = IMAGEIO_STORAGE_PLUGINS,
+    copts = COMMON_COPTS + [
+        "-include",
+        "imageio/storage/imageio_storage_api.h",
+    ],
+    includes = PLUGIN_INCLUDES,
+    deps = PLUGIN_DEPS,
+)
+
+dt_plugin_group(
+    name = "imageio_storage_plugins",
+    modules = [module[0] for module in IMAGEIO_STORAGE_PLUGINS],
+)
+
+dt_plugin_runtime_layout(
+    name = "imageio_storage_plugin_runtime_layout",
+    destdir = "plugins/imageio/storage",
+    modules = [module[0] for module in IMAGEIO_STORAGE_PLUGINS],
+)
+
+filegroup(
+    name = "bazel_plugin_milestone",
+    srcs = [
+        ":imageio_format_plugins",
+        ":imageio_storage_plugins",
+        ":iop_plugins",
+        ":lighttable_plugins",
+        ":view_plugins",
+    ],
+)
+
+filegroup(
+    name = "bazel_plugin_runtime_layout",
+    srcs = [
+        ":imageio_format_plugin_runtime_layout",
+        ":imageio_storage_plugin_runtime_layout",
+        ":iop_plugin_runtime_layout",
+        ":lighttable_plugin_runtime_layout",
+        ":view_plugin_runtime_layout",
+    ],
+)
+
+RUNTIME_BINARY_ENTRIES = [
+    (":darktable", "bin/darktable"),
+    (":darktable-cli", "bin/darktable-cli"),
+    (":darktable-cltest", "bin/darktable-cltest"),
+    (":darktable-generate-cache", "bin/darktable-generate-cache"),
+    (":libdarktable.so", "lib/darktable/libdarktable.so"),
+]
+
+RUNTIME_PLUGIN_ENTRIES = (
+    [(":lib%s.so" % module[0], "lib/darktable/plugins/lib%s.so" % module[0]) for module in IOP_PLUGINS] +
+    [(":lib%s.so" % module[0], "lib/darktable/views/lib%s.so" % module[0]) for module in VIEW_PLUGINS] +
+    [(":lib%s.so" % module[0], "lib/darktable/plugins/lighttable/lib%s.so" % module[0]) for module in LIGHTTABLE_PLUGINS] +
+    [(":lib%s.so" % module[1], "lib/darktable/plugins/imageio/format/lib%s.so" % module[1]) for module in IMAGEIO_FORMAT_PLUGINS] +
+    [(":lib%s.so" % module[0], "lib/darktable/plugins/imageio/storage/lib%s.so" % module[0]) for module in IMAGEIO_STORAGE_PLUGINS]
+)
+
+RUNTIME_GENERATED_DATA_ENTRIES = [
+    (":darktableconfig.dtd", "share/darktable/darktableconfig.dtd"),
+    (":darktableconfig.xml", "share/darktable/darktableconfig.xml"),
+    (":darktablerc", "share/darktable/darktablerc"),
+    ("//data:org.darktable.darktable.desktop", "share/applications/org.darktable.darktable.desktop"),
+    ("//data:org.darktable.darktable.appdata.xml", "share/metainfo/org.darktable.darktable.appdata.xml"),
+    ("@rawspeed//:data/cameras.xml", "share/darktable/rawspeed/cameras.xml"),
+    ("@rawspeed//:data/showcameras.xsl", "share/darktable/rawspeed/showcameras.xsl"),
+    ("//tools:common.sh", "share/darktable/tools/common.sh"),
+    ("//tools:extract_wb_from_images.sh", "share/darktable/tools/extract_wb_from_images.sh"),
+    ("//tools:purge_from_cache.sh", "share/darktable/tools/purge_from_cache.sh"),
+    ("//tools:purge_non_existing_images.sh", "share/darktable/tools/purge_non_existing_images.sh"),
+    ("//tools:purge_unused_tags.sh", "share/darktable/tools/purge_unused_tags.sh"),
+]
+
+dt_runtime_tree(
+    name = "bazel_runtime_tree",
+    data = ["//data:runtime_data"],
+    entries = RUNTIME_BINARY_ENTRIES + RUNTIME_PLUGIN_ENTRIES + RUNTIME_GENERATED_DATA_ENTRIES,
+)
+
+genrule(
+    name = "darktable-bazel-launcher",
+    srcs = [
+        ":bazel_runtime_tree",
+        ":darktable",
+    ],
+    outs = ["darktable-bazel"],
+    cmd = "\n".join([
+        "cat > $@ <<'EOF'",
+        "#!/bin/sh",
+        "set -eu",
+        "self=$$(CDPATH= cd -- \"$$(dirname -- \"$$0\")\" && pwd)",
+        "exec \"$$self/darktable-runtime/bin/darktable-bazel\" \"$$@\"",
+        "EOF",
+        "chmod +x $@",
+    ]),
+)
+
 filegroup(
     name = "iop_module_sources",
     srcs = glob(["iop/*.[ch]", "iop/*.cc", "iop/demosaicing/*"], allow_empty = True),
@@ -551,6 +946,10 @@ filegroup(
         ":darktable-cltest",
         ":darktable-generate-cache",
         ":libdarktable.so",
+        ":bazel_plugin_milestone",
+        ":bazel_plugin_runtime_layout",
+        ":bazel_runtime_tree",
+        ":darktable-bazel",
         ":iop_module_sources",
         ":view_module_sources",
         ":lighttable_module_sources",

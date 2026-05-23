@@ -2,6 +2,14 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "runtime_data",
+    srcs = [
+        "data/cameras.xml",
+        "data/showcameras.xsl",
+    ],
+)
+
 genrule(
     name = "rawspeed_config_h",
     outs = ["rawspeedconfig.h"],

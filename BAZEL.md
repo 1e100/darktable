@@ -23,10 +23,63 @@ The current milestone target builds:
 - `//src:darktable-cltest`
 - `//src:darktable-generate-cache`
 - `//src:libdarktable.so`
+- `//src:bazel_plugin_milestone`
+- `//src:bazel_runtime_tree`
 
-It also keeps source filegroups for image operation, view, lighttable, and
-image I/O modules in the graph. Those module filegroups are not yet complete
-plugin shared-library builds.
+The plugin milestone builds the currently modeled Linux plugin shared
+libraries:
+
+```sh
+bazel build --config=linux //src:bazel_plugin_milestone
+```
+
+This target includes IOP, view, lighttable, image I/O format, and image I/O
+storage plugins as `lib*.so` artifacts.
+
+To arrange those shared libraries in the same directory structure darktable's
+runtime loader expects, build:
+
+```sh
+bazel build --config=linux //src:bazel_plugin_runtime_layout
+```
+
+This produces:
+
+- `bazel-bin/src/bazel-runtime/lib/darktable/views`
+- `bazel-bin/src/bazel-runtime/lib/darktable/plugins`
+- `bazel-bin/src/bazel-runtime/lib/darktable/plugins/lighttable`
+- `bazel-bin/src/bazel-runtime/lib/darktable/plugins/imageio/format`
+- `bazel-bin/src/bazel-runtime/lib/darktable/plugins/imageio/storage`
+
+For a fuller runnable tree, build:
+
+```sh
+bazel build --config=linux //src:bazel_runtime_tree
+```
+
+This produces `bazel-bin/src/darktable-runtime`, with:
+
+- `bin/` containing `darktable`, `darktable-cli`, `darktable-cltest`,
+  `darktable-generate-cache`, and a `darktable-bazel` launcher.
+- `lib/darktable/` containing `libdarktable.so`, views, IOP plugins,
+  lighttable plugins, and image I/O plugins.
+- `share/darktable/` containing runtime data, generated `darktablerc`,
+  generated `darktableconfig.xml`, RawSpeed camera data, Lua scripts, OpenCL
+  kernels, styles, themes, watermarks, pixmaps, and helper scripts.
+- Minimal unlocalized desktop/appstream metadata under `share/applications`
+  and `share/metainfo`.
+- An empty `share/locale` directory so binaries can resolve their configured
+  locale path even before translation catalogs are modeled.
+
+The launcher in the runtime tree passes `--moduledir`, `--datadir`, and
+`--localedir`:
+
+```sh
+bazel-bin/src/darktable-runtime/bin/darktable-bazel --version
+```
+
+`//src:darktable-bazel` also emits `bazel-bin/src/darktable-bazel`, a small
+wrapper that forwards to the launcher inside the runtime tree.
 
 For a cache-busting sandbox verification run, use an otherwise harmless extra
 compile define:
@@ -45,7 +98,7 @@ The root `.bazelrc` enables Bzlmod and sets common C/C++ defaults:
 - `HAVE_CONFIG_H`, `_XOPEN_SOURCE=700`, and PIC are applied globally.
 - The Linux configuration enables the feature macros needed by the current
   milestone: OpenCL, LibRaw, Lua, GPhoto2, GraphicsMagick, JPEG XL, WebP, AVIF,
-  HEIF, OpenEXR, OpenJPEG, SDL, PortMidi, ICU, and OpenMP.
+  HEIF, OpenEXR, OpenJPEG, SDL, ICU, and OpenMP.
 
 The `linux_full` configuration exists as a placeholder for fuller desktop
 feature coverage. It currently adds macros for map, colord-gtk, libsecret,
@@ -138,6 +191,7 @@ core source targets:
 - `tools/darktable_authors.h`
 - `darktableconfig.dtd`
 - `darktableconfig.xml`
+- `darktablerc`
 - `preferences_gen.h`
 - `conf_gen.h`
 - `styles_string.h`
@@ -166,6 +220,38 @@ localized:
 
 `darktable_core_compile` joins those libraries and the generated version source
 into the shared core used by the milestone binaries.
+
+The plugin shared libraries are built and laid out by category:
+
+- `iop_plugins`
+- `view_plugins`
+- `lighttable_plugins`
+- `imageio_format_plugins`
+- `imageio_storage_plugins`
+
+The corresponding runtime layout targets are:
+
+- `iop_plugin_runtime_layout`
+- `view_plugin_runtime_layout`
+- `lighttable_plugin_runtime_layout`
+- `imageio_format_plugin_runtime_layout`
+- `imageio_storage_plugin_runtime_layout`
+
+`bazel/dt_runtime.bzl` assembles the fuller runtime tree. It deliberately uses
+a functional Bazel layout rather than trying to mirror every CMake install
+destination exactly.
+
+IOP plugins are compiled from generated introspection sources produced by
+`tools/introspection/parser.pl`, matching the CMake module pattern. Generic
+plugin categories use the same forced API includes as CMake:
+
+- IOP: `common/module_api.h` and `iop/iop_api.h`
+- Views: `common/module_api.h` and `views/view_api.h`
+- Lighttable/libs: `common/module_api.h` and `libs/lib_api.h`
+- Image I/O format: `common/module_api.h` and
+  `imageio/format/imageio_format_api.h`
+- Image I/O storage: `common/module_api.h` and
+  `imageio/storage/imageio_storage_api.h`
 
 Some source files are implementation fragments included by other translation
 units, not independent compilation units. Those are declared through
@@ -205,12 +291,17 @@ The Bazel build is not a replacement for the full CMake build yet. Known gaps:
 - Only Linux is currently configured.
 - macOS support needs a platform configuration, framework handling, and
   replacements for Linux-specific feature probes and link options.
-- Plugin shared libraries are not fully modeled.
+- `bazel_runtime_tree` is a runnable tree, not a distro package or system
+  installation target.
 - The generated `config.h` is a Linux milestone approximation rather than a
   complete configure system.
 - `linux_full` feature coverage is incomplete.
 - Many leaf libraries still come from `pkg-config` and system packages.
-- Packaging and install layout are not modeled.
+- Translated desktop/appstream metadata, manpages, documentation, and package
+  artifacts are not modeled.
+- PortMidi is not modeled in the base Linux plugin milestone because this host
+  does not provide `portmidi.h`, `libportmidi`, or `portmidi.pc`; CMake would
+  also skip the MIDI plugin in that environment.
 
 Despite those limitations, the current milestone is useful as a strict,
 sandboxed compile/link check for a substantial native darktable build under

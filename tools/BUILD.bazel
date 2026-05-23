@@ -8,6 +8,11 @@ exports_files([
     "generate_darktablerc_conf.xsl",
     "generate_prefs.xsl",
     "generate_styles_string.sh",
+    "introspection/ast.pm",
+    "introspection/code_gen.pm",
+    "introspection/parser.pm",
+    "introspection/parser.pl",
+    "introspection/scanner.pm",
 ])
 
 filegroup(name = "authors_h", srcs = ["authors_h.sh"])
@@ -17,5 +22,26 @@ filegroup(name = "create_version_c", srcs = [
 ])
 filegroup(name = "create_version_c_script", srcs = ["create_version_c.sh"])
 filegroup(name = "generate_darktablerc_conf_xsl", srcs = ["generate_darktablerc_conf.xsl"])
+filegroup(name = "generate_darktablerc_xsl", srcs = ["generate_darktablerc.xsl"])
 filegroup(name = "generate_prefs_xsl", srcs = ["generate_prefs.xsl"])
 filegroup(name = "generate_styles_string", srcs = ["generate_styles_string.sh"])
+filegroup(
+    name = "runtime_tools",
+    srcs = [
+        "common.sh",
+        "extract_wb_from_images.sh",
+        "purge_from_cache.sh",
+        "purge_non_existing_images.sh",
+        "purge_unused_tags.sh",
+    ],
+)
+filegroup(
+    name = "introspection_tools",
+    srcs = [
+        "introspection/ast.pm",
+        "introspection/code_gen.pm",
+        "introspection/parser.pm",
+        "introspection/parser.pl",
+        "introspection/scanner.pm",
+    ],
+)

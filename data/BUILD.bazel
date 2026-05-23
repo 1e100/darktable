@@ -3,10 +3,26 @@ package(default_visibility = ["//visibility:public"])
 exports_files([
     "darktableconfig.dtd",
     "darktableconfig.xml.in",
+    "org.darktable.darktable.appdata.xml.in",
+    "org.darktable.darktable.desktop.in",
 ])
 
 filegroup(name = "darktableconfig_xml_in", srcs = ["darktableconfig.xml.in"])
 filegroup(name = "darktableconfig_dtd", srcs = ["darktableconfig.dtd"])
+
+genrule(
+    name = "desktop_file",
+    srcs = ["org.darktable.darktable.desktop.in"],
+    outs = ["org.darktable.darktable.desktop"],
+    cmd = "sed -e 's/^_GenericName=/GenericName=/' -e 's/^_Comment=/Comment=/' -e 's/^_Keywords=/Keywords=/' -e 's|$${CMAKE_INSTALL_PREFIX}|/usr|g' -e 's|$${DESKTOP_MIME_TYPES}||g' $(location org.darktable.darktable.desktop.in) > $@",
+)
+
+genrule(
+    name = "appdata_file",
+    srcs = ["org.darktable.darktable.appdata.xml.in"],
+    outs = ["org.darktable.darktable.appdata.xml"],
+    cmd = "sed -e 's/<_\\([a-zA-Z][^ >]*\\)/<\\1/g' -e 's|</_\\([a-zA-Z][^>]*\\)>|</\\1>|g' $(location org.darktable.darktable.appdata.xml.in) > $@",
+)
 
 filegroup(
     name = "runtime_data",
