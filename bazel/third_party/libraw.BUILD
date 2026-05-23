@@ -44,10 +44,9 @@ cc_library(
         "-DUSE_JPEG8",
     ],
     includes = ["."],
-    linkopts = [
-        "-ljpeg",
-        "-lz",
-        "-lm",
+    linkopts = ["-lm"],
+    deps = [
+        "@//third_party/jpeg:jpeg",
+        "@//third_party/zlib:zlib",
     ],
-    deps = ["@darktable_linux_system_probe//:pkg"],
 )

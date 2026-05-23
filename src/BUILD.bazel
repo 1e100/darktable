@@ -277,12 +277,20 @@ GENERATED_HDRS = [
     ":tools/darktable_authors.h",
 ]
 
+BAZEL_LEAF_DEPS = [
+    "//third_party/jpeg:jpeg",
+    "//third_party/png:png",
+    "//third_party/pugixml:pugixml",
+    "//third_party/sqlite:sqlite",
+    "//third_party/zlib:zlib",
+]
+
 cc_library(
     name = "darktable_public_headers",
     hdrs = CORE_HDRS + GENERATED_HDRS,
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES + ["."],
-    deps = [
+    deps = BAZEL_LEAF_DEPS + [
         "@darktable_linux_system_probe//:pkg",
         "@gtk_stack//:pkg",
     ],
@@ -308,7 +316,7 @@ cc_library(
     ], allow_empty = True),
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES + ["."],
-    deps = [
+    deps = BAZEL_LEAF_DEPS + [
         ":darktable_public_headers",
         "@darktable_linux_system_probe//:pkg",
         "@gtk_stack//:pkg",
@@ -320,6 +328,7 @@ CORE_DEPS = [
     "@lautoc//:lautoc",
     "@lua_internal//:lua",
     "@whereami//:whereami",
+] + BAZEL_LEAF_DEPS + [
     "@darktable_linux_system_probe//:pkg",
     "@gtk_stack//:pkg",
 ]

@@ -2,6 +2,18 @@ module(name = "darktable", version = "0.0.0")
 
 bazel_dep(name = "rules_cc", version = "0.2.17")
 bazel_dep(name = "rules_pkg", version = "1.1.0")
+bazel_dep(name = "libjpeg_turbo", version = "3.1.3.bcr.4")
+bazel_dep(name = "libpng", version = "1.6.54")
+bazel_dep(name = "pugixml", version = "1.15")
+bazel_dep(name = "sqlite3", version = "3.51.2.bcr.1")
+bazel_dep(name = "zlib", version = "1.3.2")
+
+single_version_override(
+    module_name = "libpng",
+    patches = ["//third_party/png:libpng_no_config.patch"],
+    patch_strip = 0,
+    version = "1.6.54",
+)
 
 pkg_config_repository = use_repo_rule("//bazel:pkg_config.bzl", "pkg_config_repository")
 new_local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "new_local_repository")
@@ -67,16 +79,12 @@ pkg_config_repository(
 pkg_config_repository(
     name = "darktable_linux_system_probe",
     packages = [
-        "sqlite3 >= 3.26",
         "libcurl >= 7.56",
-        "libpng >= 1.5.0",
         "exiv2 >= 0.27.2",
         "lensfun",
-        "libjpeg",
         "libtiff-4",
         "lcms2",
         "libxml-2.0",
-        "pugixml >= 1.8",
         "libgphoto2 >= 2.5",
         "libopenjp2",
         "libwebp >= 0.3.0",

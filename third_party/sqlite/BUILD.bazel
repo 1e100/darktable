@@ -1,0 +1,7 @@
+package(default_visibility = ["//visibility:public"])
+
+alias(
+    name = "sqlite",
+    actual = "@sqlite3//:sqlite3",
+)
+

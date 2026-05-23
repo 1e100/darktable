@@ -58,10 +58,10 @@ cc_library(
         "src/librawspeed",
         "src/external",
     ],
-    linkopts = [
-        "-ljpeg",
-        "-lz",
-        "-lm",
+    linkopts = ["-lm"],
+    deps = [
+        "@//third_party/jpeg:jpeg",
+        "@//third_party/pugixml:pugixml",
+        "@//third_party/zlib:zlib",
     ],
-    deps = ["@darktable_linux_system_probe//:pkg"],
 )

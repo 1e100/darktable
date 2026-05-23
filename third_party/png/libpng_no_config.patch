@@ -1,0 +1,11 @@
+--- BUILD.bazel
++++ BUILD.bazel
+@@ -90,6 +90,7 @@ cc_library(
+     includes = ["."],
+     linkopts = select({
+         "@platforms//os:windows": [],
+         "//conditions:default": ["-lm"],
+     }),
++    copts = ["-DPNG_NO_CONFIG_H"],
+     visibility = ["//visibility:public"],
+     local_defines = select({

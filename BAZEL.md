@@ -115,6 +115,8 @@ refer to host system headers and libraries.
 
 - `rules_cc` for C/C++ rules.
 - `rules_pkg` for future packaging work.
+- Bazel Central Registry modules for migrated leaf libraries: `zlib`,
+  `sqlite3`, `pugixml`, `libpng`, and `libjpeg_turbo`.
 - `new_local_repository` for vendored source trees already present in the
   darktable source checkout.
 - `pkg_config_repository`, a custom repository rule in
@@ -132,6 +134,25 @@ are:
 
 These repositories have Bazel BUILD files under `bazel/third_party/`.
 
+Root-owned aliases for migrated leaf dependencies live under `third_party/`.
+Source targets should depend on those aliases rather than directly on external
+repository labels. This keeps labels stable if a provider changes, for example
+using `//third_party/jpeg:jpeg` even though the current provider is
+`@libjpeg_turbo//:jpeg`.
+
+The current aliases are:
+
+- `//third_party/jpeg:jpeg`
+- `//third_party/png:png`
+- `//third_party/pugixml:pugixml`
+- `//third_party/sqlite:sqlite`
+- `//third_party/zlib:zlib`
+
+The `libpng` BCR module is patched through `single_version_override` to add
+`PNG_NO_CONFIG_H`. The repository-wide Bazel configuration defines
+`HAVE_CONFIG_H` for darktable sources, and libpng's upstream sources otherwise
+interpret that as a request for an Autoconf-generated `config.h`.
+
 ## Hermeticity Boundary
 
 The intended long-term boundary is:
@@ -142,14 +163,19 @@ The intended long-term boundary is:
   through Bzlmod.
 
 The current build is intentionally transitional. `@gtk_stack` represents the
-explicit GTK-system boundary. `@darktable_linux_system_probe` aggregates many
-leaf dependencies through `pkg-config` so the initial Linux build can compile
-and link while the native external repositories are added incrementally.
+explicit GTK-system boundary. `@darktable_linux_system_probe` aggregates
+unmigrated dependencies through `pkg-config` so the Linux build can compile and
+link while native external repositories are added incrementally.
 
-Leaf dependencies still flowing through the transitional probe include image
-codecs, metadata libraries, compression libraries, Wayland client symbols, ICU,
-SDL, and similar small libraries. `TODO.md` tracks the intent to replace those
-with pinned source builds.
+The first migrated leaf set is zlib, SQLite, pugixml, libpng, and
+libjpeg-turbo. RawSpeed and LibRaw now depend on the root-owned JPEG/zlib
+aliases instead of using `-ljpeg`, `-lz`, and the aggregate pkg-config probe.
+
+Leaf dependencies still flowing through the transitional probe include libcurl,
+Exiv2, lensfun, libtiff, lcms2, libxml2, libgphoto2, OpenJPEG, WebP,
+AVIF/HEIF/JPEG XL, Wayland client symbols, OpenEXR/Imath, GraphicsMagick, ICU,
+SDL, and similar libraries. `TODO.md` tracks which of these are good candidates
+for later pinned source builds.
 
 ## pkg-config Rule
 
