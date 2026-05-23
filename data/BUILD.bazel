@@ -1,0 +1,33 @@
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    "darktableconfig.dtd",
+    "darktableconfig.xml.in",
+])
+
+filegroup(name = "darktableconfig_xml_in", srcs = ["darktableconfig.xml.in"])
+filegroup(name = "darktableconfig_dtd", srcs = ["darktableconfig.dtd"])
+
+filegroup(
+    name = "runtime_data",
+    srcs = glob(
+        [
+            "darktable.bash",
+            "gdb_commands",
+            "luarc",
+            "noiseprofiles.json",
+            "shortcutsrc*",
+            "wb_presets.json",
+            "kernels/**",
+            "latex/**",
+            "lua/**",
+            "pixmaps/**",
+            "pswp/**",
+            "style/**",
+            "styles/**",
+            "themes/**",
+            "watermarks/**",
+        ],
+        exclude = ["**/CMakeLists.txt"],
+    ),
+)

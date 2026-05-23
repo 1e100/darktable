@@ -1,0 +1,108 @@
+module(name = "darktable", version = "0.0.0")
+
+bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "rules_pkg", version = "1.1.0")
+
+pkg_config_repository = use_repo_rule("//bazel:pkg_config.bzl", "pkg_config_repository")
+new_local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "new_local_repository")
+
+new_local_repository(
+    name = "whereami",
+    build_file = "//bazel/third_party:whereami.BUILD",
+    path = "src/external/whereami",
+)
+
+new_local_repository(
+    name = "libxcf",
+    build_file = "//bazel/third_party:libxcf.BUILD",
+    path = "src/external/libxcf",
+)
+
+new_local_repository(
+    name = "lua_internal",
+    build_file = "//bazel/third_party:lua.BUILD",
+    path = "src/external/lua",
+)
+
+new_local_repository(
+    name = "lautoc",
+    build_file = "//bazel/third_party:lautoc.BUILD",
+    path = "src/external/LuaAutoC",
+)
+
+new_local_repository(
+    name = "libraw_internal",
+    build_file = "//bazel/third_party:libraw.BUILD",
+    path = "src/external/LibRaw",
+)
+
+new_local_repository(
+    name = "rawspeed",
+    build_file = "//bazel/third_party:rawspeed.BUILD",
+    path = "src/external/rawspeed",
+)
+
+pkg_config_repository(
+    name = "gtk_stack",
+    packages = [
+        "gtk+-3.0 >= 3.24.15",
+        "glib-2.0 >= 2.56",
+        "gio-2.0",
+        "gmodule-2.0",
+        "gthread-2.0",
+        "gdk-pixbuf-2.0",
+        "cairo",
+        "pango",
+        "pangocairo",
+        "atk",
+        "librsvg-2.0",
+        "json-glib-1.0",
+    ],
+)
+
+# Transitional probe target used while native hermetic third-party archives are
+# added one by one. The GTK stack above is the intended long-term system
+# exception; this target makes early Linux build evaluation expose concrete
+# missing host packages instead of failing later with unresolved compiler flags.
+pkg_config_repository(
+    name = "darktable_linux_system_probe",
+    packages = [
+        "sqlite3 >= 3.26",
+        "libcurl >= 7.56",
+        "libpng >= 1.5.0",
+        "exiv2 >= 0.27.2",
+        "lensfun",
+        "libjpeg",
+        "libtiff-4",
+        "lcms2",
+        "libxml-2.0",
+        "pugixml >= 1.8",
+        "libgphoto2 >= 2.5",
+        "libopenjp2",
+        "libwebp >= 0.3.0",
+        "libwebpmux",
+        "libavif >= 0.9.3",
+        "libheif >= 1.13.0",
+        "libjxl >= 0.7.0",
+        "libjxl_threads",
+        "wayland-client",
+        "OpenEXR",
+        "Imath >= 3.1.0",
+        "GraphicsMagick",
+        "icu-i18n",
+        "icu-uc",
+        "icu-io",
+        "sdl2",
+    ],
+)
+
+pkg_config_repository(
+    name = "darktable_linux_optional_desktop",
+    packages = [
+        "colord",
+        "colord-gtk",
+        "libsecret-1",
+        "osmgpsmap-1.0",
+        "portmidi",
+    ],
+)

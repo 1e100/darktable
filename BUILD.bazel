@@ -1,0 +1,15 @@
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["AUTHORS"])
+
+filegroup(
+    name = "source_archive_inputs",
+    srcs = glob(
+        ["**"],
+        exclude = [
+            ".git/**",
+            "bazel-*",
+            "build/**",
+        ],
+    ),
+)
