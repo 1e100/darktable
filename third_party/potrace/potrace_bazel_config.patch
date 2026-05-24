@@ -1,0 +1,15 @@
+diff --git a/src/config.h b/src/config.h
+new file mode 100644
+--- /dev/null
++++ b/src/config.h
+@@ -0,0 +1,10 @@
++/* Minimal config.h for potrace built with Bazel */
++#define HAVE_INTTYPES_H 1
++#define HAVE_STDINT_H 1
++#define HAVE_STRINGS_H 1
++#define HAVE_STRING_H 1
++#define HAVE_UNISTD_H 1
++#define HAVE_SYS_STAT_H 1
++#define HAVE_SYS_TYPES_H 1
++#define PACKAGE_VERSION "1.16"
++#define VERSION "1.16"

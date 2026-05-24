@@ -1,0 +1,10 @@
+--- util/util.bzl
++++ util/util.bzl
+@@ -38,6 +38,7 @@ gcc_copts_c = [
+     "-Wmissing-prototypes",
+     "-Wold-style-definition",
+     "-Wstrict-prototypes",
++    "-Wno-discarded-qualifiers",
+ ]
+
+ boringssl_copts_common = select({

@@ -166,7 +166,6 @@ cc_binary(
         "camlibs/ptp2/fujiptpip.c",
         "camlibs/ptp2/library.c",
         "camlibs/ptp2/olympus-wrap.c",
-        "camlibs/ptp2/ptp-pack.c",
         "camlibs/ptp2/ptp.c",
         "camlibs/ptp2/ptpip.c",
         "camlibs/ptp2/usb.c",

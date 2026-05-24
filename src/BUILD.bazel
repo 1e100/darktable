@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 darktable_generated_headers()
 
 COMMON_COPTS = [
+    "-D_GNU_SOURCE",
     "-include",
     "src/config.h",
     "-include",
@@ -352,6 +353,7 @@ cc_library(
 
 CORE_DEPS = [
     ":darktable_public_headers",
+    ":potrace_system",
     "@lautoc//:lautoc",
     "@lua_internal//:lua",
     "@whereami//:whereami",
@@ -359,9 +361,9 @@ CORE_DEPS = [
     "@gtk_stack//:pkg",
 ]
 
-cc_library(
+alias(
     name = "potrace_system",
-    linkopts = ["-lpotrace"],
+    actual = "@potrace//:potrace",
 )
 
 dt_core_lib(
