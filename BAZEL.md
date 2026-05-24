@@ -124,6 +124,18 @@ runtime tree's image I/O format plugins, image I/O storage plugins, and IOP
 plugins are present in darktable's module registries with their required API
 callbacks wired. It intentionally stops before GUI/view initialization.
 
+The first real CLI workflow smoke test exports a bundled JPEG through the
+runtime tree's `darktable-cli`:
+
+```sh
+bazel test --config=linux //src:bazel_cli_export_smoke_test
+```
+
+This test uses `data/style/image-1.jpg` as packaged in the runtime tree,
+isolates config/cache/data directories under `TEST_TMPDIR`, points all core
+runtime paths at the Bazel tree, and verifies that export exits cleanly and
+writes a JPEG.
+
 SQLite ICU integration has a narrower smoke test:
 
 ```sh
@@ -448,7 +460,10 @@ localized:
 
 `darktable_core_compile` joins those libraries and the generated version source.
 `libdarktable.so` aggregates that compile graph into the runtime shared core,
-and plugins link against a `cc_import` wrapper for that shared library.
+and runtime binaries plus plugins link against a `cc_import` wrapper for that
+shared library. Shared library links use `-Wl,-Bsymbolic` so C++ symbols from
+statically folded leaf libraries remain bound inside each DSO rather than being
+interposed across `libdarktable.so` and plugin `.so` files.
 
 The plugin shared libraries are built and laid out by category:
 

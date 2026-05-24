@@ -561,6 +561,8 @@ cc_binary(
         "-shared",
         "-Wl,-soname,libdarktable.so",
         "-Wl,-rpath,$$ORIGIN",
+        "-Wl,-Bsymbolic",
+        "-Wl,--exclude-libs,ALL",
     ],
     linkshared = True,
     linkstatic = True,
@@ -578,7 +580,10 @@ cc_binary(
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
     linkopts = ["-Wl,-rpath,$$ORIGIN/../lib/darktable"],
-    deps = [":darktable_core_compile"],
+    deps = [
+        ":darktable_public_headers",
+        ":darktable_shared",
+    ],
 )
 
 cc_binary(
@@ -588,7 +593,8 @@ cc_binary(
     includes = COMMON_INCLUDES,
     linkopts = ["-Wl,-rpath,$$ORIGIN/../lib/darktable"],
     deps = [
-        ":darktable_core_compile",
+        ":darktable_public_headers",
+        ":darktable_shared",
         "@whereami//:whereami",
     ],
 )
@@ -599,7 +605,10 @@ cc_binary(
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
     linkopts = ["-Wl,-rpath,$$ORIGIN/../lib/darktable"],
-    deps = [":darktable_core_compile"],
+    deps = [
+        ":darktable_public_headers",
+        ":darktable_shared",
+    ],
 )
 
 cc_binary(
@@ -609,7 +618,8 @@ cc_binary(
     includes = COMMON_INCLUDES,
     linkopts = ["-Wl,-rpath,$$ORIGIN/../lib/darktable"],
     deps = [
-        ":darktable_core_compile",
+        ":darktable_public_headers",
+        ":darktable_shared",
         "@whereami//:whereami",
     ],
 )
@@ -1121,6 +1131,13 @@ genrule(
 sh_test(
     name = "bazel_runtime_smoke_test",
     srcs = ["//bazel:runtime_smoke_test.sh"],
+    args = ["$(rootpath :bazel_runtime_tree)"],
+    data = [":bazel_runtime_tree"],
+)
+
+sh_test(
+    name = "bazel_cli_export_smoke_test",
+    srcs = ["//bazel:cli_export_smoke_test.sh"],
     args = ["$(rootpath :bazel_runtime_tree)"],
     data = [":bazel_runtime_tree"],
 )

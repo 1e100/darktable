@@ -237,8 +237,10 @@ Optional desktop/system feature probes include:
   exercises headless `dlopen()` plus required API symbol checks across the
   arranged plugin tree. `bazel_plugin_init_smoke_test` is a gtest fixture that
   runs real non-GUI `dt_init()` against the Bazel runtime tree and verifies
-  initialized image I/O and IOP module registries. Remaining coverage should
-  move upward into CLI workflows and carefully bounded GUI/view initialization.
+  initialized image I/O and IOP module registries. `bazel_cli_export_smoke_test`
+  exercises a real JPEG export through the arranged `darktable-cli`. Remaining
+  coverage should add CLI variants and carefully bounded GUI/view
+  initialization.
 - The Linux Bazel configuration models map/OSMGpsMap, print/CUPS,
   colord/colord-gtk, libsecret, and GMIC compressed LUTs as system
   dependencies. Remaining fuller feature parity work includes ImageMagick,
@@ -271,6 +273,7 @@ bazel build --config=linux //src:bazel_runtime_tree
 bazel test --config=linux //src:bazel_runtime_smoke_test
 bazel test --config=linux //src:bazel_plugin_load_smoke_test
 bazel test --config=linux //src:bazel_plugin_init_smoke_test
+bazel test --config=linux //src:bazel_cli_export_smoke_test
 bazel test --config=linux //src:bazel_sqliteicu_smoke_test
 bazel-bin/src/darktable-runtime/bin/darktable-bazel --version
 ```

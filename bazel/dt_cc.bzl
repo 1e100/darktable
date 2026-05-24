@@ -14,6 +14,8 @@ def dt_module(name, srcs, deps = [], copts = [], linkopts = [], includes = [], o
         includes = includes,
         linkopts = linkopts + [
             "-shared",
+            "-Wl,-Bsymbolic",
+            "-Wl,--exclude-libs,ALL",
             "-Wl,--unresolved-symbols=ignore-in-shared-libs",
             "-Wl,--allow-shlib-undefined",
         ],
@@ -66,6 +68,8 @@ def dt_plugin_module(
         deps = [":%s_plugin_objects" % name] + _unique(deps + link_deps),
         linkopts = linkopts + [
             "-shared",
+            "-Wl,-Bsymbolic",
+            "-Wl,--exclude-libs,ALL",
             "-Wl,--unresolved-symbols=ignore-in-shared-libs",
             "-Wl,--allow-shlib-undefined",
         ],
