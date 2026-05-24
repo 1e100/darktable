@@ -98,7 +98,7 @@ The root `.bazelrc` enables Bzlmod and sets common C/C++ defaults:
 - `HAVE_CONFIG_H`, `_XOPEN_SOURCE=700`, and PIC are applied globally.
 - The Linux configuration enables the feature macros needed by the current
   milestone: OpenCL, LibRaw, Lua, GPhoto2, GraphicsMagick, JPEG XL, WebP, AVIF,
-  HEIF, OpenEXR, OpenJPEG, SDL, ICU, and OpenMP.
+  HEIF, OpenEXR, OpenJPEG, ICU, and OpenMP.
 
 The `linux_full` configuration exists as a placeholder for fuller desktop
 feature coverage. It currently adds macros for map, colord-gtk, libsecret,
@@ -208,7 +208,7 @@ aggregate pkg-config probe.
 
 Leaf dependencies still flowing through the transitional probe include libcurl,
 Exiv2, lensfun, libgphoto2, AVIF/HEIF/JPEG XL, Wayland client symbols,
-OpenEXR/Imath, GraphicsMagick, ICU, SDL, and similar libraries. `TODO.md`
+OpenEXR/Imath, GraphicsMagick, ICU, and similar libraries. `TODO.md`
 tracks which of these are good candidates for later pinned source builds.
 
 ## pkg-config Rule
@@ -356,6 +356,7 @@ The Bazel build is not a replacement for the full CMake build yet. Known gaps:
 - The generated `config.h` is a Linux milestone approximation rather than a
   complete configure system.
 - `linux_full` feature coverage is incomplete.
+- SDL2/gamepad input is intentionally omitted from the Bazel milestone.
 - Several non-leaf or broader libraries still come from `pkg-config` and system
   packages.
 - Translated desktop/appstream metadata, manpages, documentation, and package

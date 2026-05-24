@@ -130,7 +130,6 @@ pkg_config_repository(
         "icu-i18n",
         "icu-uc",
         "icu-io",
-        "sdl2",
     ],
 )
 

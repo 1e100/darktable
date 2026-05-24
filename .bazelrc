@@ -25,7 +25,6 @@ build:linux --copt=-DHAVE_LIBAVIF=1
 build:linux --copt=-DHAVE_LIBHEIF=1
 build:linux --copt=-DHAVE_OPENEXR
 build:linux --copt=-DHAVE_OPENJPEG
-build:linux --copt=-DHAVE_SDL
 build:linux --copt=-DHAVE_ICU
 build:linux --copt=-fopenmp
 build:linux --linkopt=-fopenmp

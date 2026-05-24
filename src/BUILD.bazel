@@ -764,7 +764,6 @@ LIGHTTABLE_PLUGINS = [
     ("timeline", ["libs/tools/timeline.c"]),
     ("image_infos", ["libs/tools/image_infos.c"]),
     ("log_history", ["libs/tools/log_history.c"]),
-    ("gamepad", ["libs/tools/gamepad.c"]),
     ("camera", ["libs/camera.c"]),
     ("live_view", ["libs/live_view.c"]),
     ("geotagging", ["libs/geotagging.c"]),
