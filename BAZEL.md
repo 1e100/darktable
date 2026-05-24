@@ -138,8 +138,9 @@ refer to host system headers and libraries.
 - `rules_pkg` for future packaging work.
 - `rules_shell` for shell smoke tests.
 - Bazel Central Registry modules for migrated leaf libraries: `zlib`,
-  `sqlite3`, `pugixml`, `libpng`, `libjpeg_turbo`, `libxml2`, `libwebp`,
-  `libtiff`, `libavif`, `libheif`, `imath`, `openexr`, and `icu`.
+  `sqlite3`, `pugixml`, `brotli`, `curl`, `highway`, `libpng`,
+  `libjpeg_turbo`, `libxml2`, `libwebp`, `libtiff`, `libavif`, `libheif`,
+  `imath`, `openexr`, `skcms`, and `icu`.
 - `http_archive`, declared through Bzlmod `use_repo_rule`, for pinned upstream
   release archives that are not available as usable BCR modules yet.
 - `new_local_repository` for vendored source trees already present in the
@@ -168,11 +169,15 @@ using `//third_party/jpeg:jpeg` even though the current provider is
 The current aliases are:
 
 - `//third_party/avif:avif`
+- `//third_party/curl:curl`
 - `//third_party/heif:heif`
 - `//third_party/icu:icu`
 - `//third_party/imath:imath`
 - `//third_party/jpeg:jpeg`
+- `//third_party/jxl:jxl`
 - `//third_party/lcms2:lcms2`
+- `//third_party/lensfun:lensfun`
+- `//third_party/lensfun:lensfun_data`
 - `//third_party/openexr:openexr`
 - `//third_party/openjpeg:openjpeg`
 - `//third_party/png:png`
@@ -225,6 +230,17 @@ curl uses the BCR `curl` module and is exposed through `//third_party/curl:curl`
 The BCR module owns the TLS backend and support-library closure; darktable does
 not keep a parallel `pkg-config` libcurl dependency.
 
+JPEG XL uses the upstream libjxl 0.11.2 GitHub release through a Bzlmod
+`archive_override` because libjxl is not currently available in BCR. The
+root-owned `//third_party/jxl:jxl` target aggregates libjxl's `jpegxl` and
+`jpegxl_threads` targets. Brotli, Highway, and skcms come from BCR. The libjxl
+archive is patched so its Bazel files load `rules_cc` explicitly and expose the
+core library targets outside the archive. Brotli is patched to avoid a conflict
+between its pedantic C flags and darktable's repo-wide C99 default. Highway is
+patched to publish its repository root as an include path so libjxl's
+angle-bracket `<hwy/...>` includes resolve to the BCR Highway headers rather
+than host headers under `/usr/include`.
+
 Little CMS and OpenJPEG are currently pinned source archives rather than BCR
 modules:
 
@@ -254,17 +270,16 @@ explicit GTK-system boundary. `@darktable_linux_system_probe` aggregates
 unmigrated dependencies through `pkg-config` so the Linux build can compile and
 link while native external repositories are added incrementally.
 
-The migrated leaf set is zlib, SQLite, pugixml, libpng, libjpeg-turbo, libxml2,
-curl, WebP, libtiff, Little CMS, OpenJPEG, AVIF, HEIF, Imath, OpenEXR, ICU,
-and Lensfun.
+The migrated leaf set is zlib, SQLite, pugixml, curl, JPEG XL, libpng,
+libjpeg-turbo, libxml2, WebP, libtiff, Little CMS, OpenJPEG, AVIF, HEIF, Imath,
+OpenEXR, ICU, and Lensfun.
 RawSpeed and LibRaw now depend on the root-owned JPEG/zlib aliases instead of
 using `-ljpeg`, `-lz`, and the aggregate pkg-config probe.
 
 Leaf dependencies still flowing through the transitional probe include Exiv2,
-libgphoto2, JPEG XL, Wayland client symbols, GraphicsMagick, and similar
-libraries. Wayland remains system-provided with GTK/GDK because the code uses it
-as part of the GTK desktop backend boundary rather than as an isolated leaf
-library.
+libgphoto2, Wayland client symbols, GraphicsMagick, and similar libraries.
+Wayland remains system-provided with GTK/GDK because the code uses it as part of
+the GTK desktop backend boundary rather than as an isolated leaf library.
 
 ## pkg-config Rule
 

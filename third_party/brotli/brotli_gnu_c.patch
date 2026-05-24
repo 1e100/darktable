@@ -1,0 +1,12 @@
+--- BUILD.bazel
++++ BUILD.bazel
+@@ -42,7 +42,8 @@
+     ],
+     ":msvc": [],
+     "//conditions:default": [
+-        "--pedantic-errors",
++        "-std=gnu99",
++        "-Wno-pedantic",
+         "-Wall",
+         "-Wconversion",
+         "-Werror",

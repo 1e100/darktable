@@ -118,9 +118,10 @@ can see host headers.
 
 The current leaf dependencies modeled under Bazel are:
 
-- BCR modules: zlib, SQLite, pugixml, curl, libpng, libjpeg-turbo, libxml2,
-  WebP, libtiff, AVIF, HEIF, Imath, OpenEXR, and ICU.
-- Pinned source archives: Little CMS, OpenJPEG, and Lensfun.
+- BCR modules: zlib, SQLite, pugixml, Brotli, curl, Highway, libpng,
+  libjpeg-turbo, libxml2, WebP, libtiff, AVIF, HEIF, Imath, OpenEXR, skcms,
+  and ICU.
+- Pinned source archives: Little CMS, OpenJPEG, Lensfun, and libjxl.
 - Existing vendored local repositories: whereami, libxcf, Lua, LuaAutoC,
   LibRaw, and RawSpeed.
 
@@ -132,6 +133,7 @@ Root-owned aliases currently include:
 - `//third_party/icu:icu`
 - `//third_party/imath:imath`
 - `//third_party/jpeg:jpeg`
+- `//third_party/jxl:jxl`
 - `//third_party/lcms2:lcms2`
 - `//third_party/lensfun:lensfun`
 - `//third_party/lensfun:lensfun_data`
@@ -162,7 +164,6 @@ Remaining transitional probe dependencies include:
 
 - Exiv2
 - libgphoto2
-- JPEG XL
 - GraphicsMagick
 
 Optional desktop/system feature probes include:
@@ -193,12 +194,19 @@ Optional desktop/system feature probes include:
   `share/lensfun/version_1` in the Bazel runtime tree.
 - curl uses the BCR `curl` module through `//third_party/curl:curl`; TLS and
   support libraries come from that module's Bzlmod dependency closure.
+- libjxl is pinned to upstream 0.11.2 through a Bzlmod `archive_override`.
+  `//third_party/jxl:jxl` aggregates `jpegxl` and `jpegxl_threads`; Brotli,
+  Highway, and skcms come from BCR.
+- Brotli is patched so its strict C flags do not reject anonymous unions under
+  darktable's repo-wide C99 default.
+- Highway is patched so BCR Highway headers are exported for libjxl's
+  angle-bracket includes instead of falling through to host `/usr/include`.
 
 ## Remaining Work
 
 - Continue evaluating manageable leaf dependencies for in-tree builds.
 - Defer broad or gnarly stacks: GTK/Cairo/Pango/Rsvg/GLib, libgphoto2,
-  Wayland/desktop integration, Exiv2, GraphicsMagick, and JPEG XL.
+  Wayland/desktop integration, Exiv2, and GraphicsMagick.
 - Expand `linux_full` feature coverage: map/OSMGpsMap, print/CUPS,
   colord/colord-gtk, libsecret, GMIC compressed LUTs, ImageMagick,
   AI/ONNXRuntime, cmstest, chart tools/tests, basecurve tools, and noise tools.

@@ -289,6 +289,7 @@ BAZEL_LEAF_DEPS = [
     "//third_party/icu:icu",
     "//third_party/imath:imath",
     "//third_party/jpeg:jpeg",
+    "//third_party/jxl:jxl",
     "//third_party/lcms2:lcms2",
     "//third_party/lensfun:lensfun",
     "//third_party/openexr:openexr",
