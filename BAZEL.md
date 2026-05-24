@@ -14,11 +14,11 @@ Bazel version in `.bazelversion`.
 
 Current Linux host packages outside the pinned Bzlmod/source-archive closure are
 the GTK desktop stack, Wayland client integration, and GNU
-libltdl for libgphoto2's upstream module loader. On Debian/Ubuntu, the ltdl
-package is:
+libltdl for libgphoto2's upstream module loader. On Debian/Ubuntu, install the
+current host package set with:
 
 ```sh
-sudo apt install libltdl-dev
+./install_deps.sh
 ```
 
 ```sh
@@ -142,13 +142,8 @@ display profile integration, libsecret password storage, G'MIC compressed LUT
 support, and CUPS print support.
 
 The Linux desktop integrations are intentionally kept as system dependencies
-for now.
-
-On Debian/Ubuntu systems, install the development packages with:
-
-```sh
-sudo apt install libcolord-dev libcolord-gtk-dev libsecret-1-dev libosmgpsmap-1.0-dev libcups2-dev libgmic-dev
-```
+for now. `install_deps.sh` installs the development packages for those
+integrations along with the GTK desktop stack.
 
 Most of those integrations are modeled through `pkg-config`. CUPS and G'MIC
 are modeled through the `system_library_repository` rule because this host's
