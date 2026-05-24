@@ -12,28 +12,8 @@ build --linkopt=-lm
 
 build:linux --cpu=k8
 build:linux --copt=-DDT_BAZEL_BUILD
-build:linux --copt=-DHAVE_OMP_FIRSTPRIVATE_WITH_CONST
-build:linux --copt=-DCL_TARGET_OPENCL_VERSION=300
-build:linux --copt=-DHAVE_OPENCL
-build:linux --copt=-DHAVE_LIBRAW
-build:linux --copt=-DUSE_LUA
-build:linux --copt=-DHAVE_GPHOTO2
-build:linux --copt=-DHAVE_LIBJXL
-build:linux --copt=-DHAVE_WEBP
-build:linux --copt=-DHAVE_LIBAVIF=1
-build:linux --copt=-DHAVE_LIBHEIF=1
-build:linux --copt=-DHAVE_OPENEXR
-build:linux --copt=-DHAVE_OPENJPEG
-build:linux --copt=-DHAVE_ICU
 build:linux --copt=-fopenmp
 build:linux --linkopt=-fopenmp
 build:linux --linkopt=-Wl,--enable-new-dtags
 build:linux --sandbox_add_mount_pair=/usr/include
 build:linux --sandbox_add_mount_pair=/usr/lib/x86_64-linux-gnu
-
-build:linux_full --config=linux
-build:linux_full --copt=-DHAVE_MAP
-build:linux_full --copt=-DUSE_COLORDGTK
-build:linux_full --copt=-DHAVE_LIBSECRET
-build:linux_full --copt=-DHAVE_GMIC
-build:linux_full --copt=-DHAVE_PRINT

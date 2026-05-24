@@ -67,6 +67,8 @@ The Bazel runtime tree must preserve darktable's loader expectations:
 - image I/O plugins under `lib/darktable/plugins/imageio/{format,storage}/`
 - runtime data under `share/darktable/`
 - locale files under `share/locale/`
+- Bazel runfile shared libraries under `lib/darktable/bazel-solib/` for plugin
+  dependencies that still use Bazel-generated shared object names
 
 ## Bazel Entry Points
 
@@ -103,6 +105,11 @@ bazel build --config=linux --copt=-DDT_BAZEL_SANDBOX_VERIFY //src:bazel_build_mi
 - `MODULE.bazel.lock` is checked in and should be updated when dependency
   resolution changes.
 - `.bazelrc` enables Bzlmod and sets shared C/C++ defaults.
+- `bazel/darktable_features.bzl` owns the current Linux feature configuration
+  for generated `config.h`, supported extensions, and generated OpenCL-aware
+  preference/config headers. Do not add darktable feature macros back to
+  `.bazelrc`; keep them in this Starlark feature map unless a real platform
+  probe layer replaces it.
 - `bazel/pkg_config.bzl` defines `pkg_config_repository`, the transitional
   system dependency bridge.
 - `bazel/third_party/` contains BUILD overlays for vendored source trees under
@@ -214,6 +221,8 @@ Optional desktop/system feature probes include:
   darktable's repo-wide C99 default.
 - Highway is patched so BCR Highway headers are exported for libjxl's
   angle-bracket includes instead of falling through to host `/usr/include`.
+- libxcf is compiled with `_DEFAULT_SOURCE`, matching the legacy CMake path, so
+  Linux `htobe*` byte-order macros are visible.
 
 ## Remaining Work
 
@@ -223,22 +232,23 @@ Optional desktop/system feature probes include:
 - GraphicsMagick support was intentionally removed rather than migrated. Do not
   reintroduce it; use the optional ImageMagick path for miscellaneous LDR
   fallback imports if that feature is intentionally enabled.
-- Finish plugin link-graph cleanup. Plugin deps are split by plugin family and
-  by direct codec/header usage, but plugins still depend on
-  `darktable_core_compile`; replacing that edge with a correct shared
-  `libdarktable.so` API link requires making that shared library export the
-  symbols used by the binaries and modules.
-- Expand `linux_full` feature coverage: map/OSMGpsMap, print/CUPS,
-  colord/colord-gtk, libsecret, GMIC compressed LUTs, ImageMagick,
+- Continue plugin/runtime cleanup. Plugins now link against `libdarktable.so`
+  instead of `darktable_core_compile`, and `bazel_plugin_load_smoke_test`
+  exercises headless `dlopen()` plus required API symbol checks across the
+  arranged plugin tree. Remaining coverage should initialize representative
+  plugin classes through real darktable code paths.
+- The Linux Bazel configuration models map/OSMGpsMap, print/CUPS,
+  colord/colord-gtk, libsecret, and GMIC compressed LUTs as system
+  dependencies. Remaining fuller feature parity work includes ImageMagick,
   AI/ONNXRuntime, cmstest, chart tools/tests, basecurve tools, and noise tools.
 - Add PortMidi support for the MIDI lighttable plugin only if that plugin is
   intentionally enabled and `portmidi.h`, `libportmidi`, or `portmidi.pc` is
   available or modeled hermetically.
-- Replace the static Linux `config.h` approximation with explicit Bazel feature
-  configuration or probes that track the CMake feature matrix.
+- Add platform/compiler probes where hard-coded Linux feature values are not
+  appropriate, especially before introducing macOS support.
 - Add macOS support.
 - Add Bazel test coverage for unit tests, integration tests where practical,
-  plugin loading smoke tests, and runtime-tree smoke tests using both
+  plugin initialization smoke tests, and runtime-tree smoke tests using both
   `--moduledir` and `--datadir`.
 - Add install/package artifacts after the functional runtime tree settles.
 - Model translated desktop/appstream metadata, manpages, and generated docs.
@@ -258,6 +268,7 @@ For runtime-layout changes, also run:
 ```sh
 bazel build --config=linux //src:bazel_runtime_tree
 bazel test --config=linux //src:bazel_runtime_smoke_test
+bazel test --config=linux //src:bazel_plugin_load_smoke_test
 bazel test --config=linux //src:bazel_sqliteicu_smoke_test
 bazel-bin/src/darktable-runtime/bin/darktable-bazel --version
 ```

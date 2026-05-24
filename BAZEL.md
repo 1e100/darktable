@@ -14,11 +14,11 @@ Bazel version in `.bazelversion`.
 
 Current Linux host packages outside the pinned Bzlmod/source-archive closure are
 the GTK desktop stack, Wayland client integration, and GNU
-libltdl for libgphoto2's upstream module loader. On Debian/Ubuntu, the ltdl
-package is:
+libltdl for libgphoto2's upstream module loader. On Debian/Ubuntu, install the
+current host package set with:
 
 ```sh
-sudo apt install libltdl-dev
+./install_deps.sh
 ```
 
 ```sh
@@ -98,6 +98,18 @@ This test validates representative runtime files, plugin directories, and early
 `--version` paths for the launcher and CLI-style binaries without requiring an
 X11 or Wayland session.
 
+The runtime tree also has a plugin loading smoke test:
+
+```sh
+bazel test --config=linux //src:bazel_plugin_load_smoke_test
+```
+
+This test scans the arranged plugin directories, `dlopen()`s every `lib*.so`
+using lazy/local binding like darktable's module loader, and checks the required
+API symbols for each plugin class. It is intentionally headless: it validates
+runtime linkability and module exports, but does not initialize plugin GUI
+state.
+
 SQLite ICU integration has a narrower smoke test:
 
 ```sh
@@ -126,14 +138,28 @@ The root `.bazelrc` enables Bzlmod and sets common C/C++ defaults:
   repository is compiled as C++20 rather than carrying a target-local override.
 - C defaults to C99.
 - `HAVE_CONFIG_H`, `_XOPEN_SOURCE=700`, and PIC are applied globally.
-- The Linux configuration enables the feature macros needed by the current
-  milestone: OpenCL, LibRaw, Lua, GPhoto2, JPEG XL, WebP, AVIF,
-  HEIF, OpenEXR, OpenJPEG, ICU, and OpenMP.
 
-The `linux_full` configuration exists as a placeholder for fuller desktop
-feature coverage. It currently adds macros for map, colord-gtk, libsecret,
-GMIC, and print support, but those features are not fully modeled as Bazel
-targets yet.
+Linux feature configuration is owned by `bazel/darktable_features.bzl`, not by
+ad hoc `--copt=-D...` entries in `.bazelrc`. That file is the current source of
+truth for:
+
+- generated `config.h` package/install constants
+- generated `config.h` feature macros
+- generated `dt_supported_extensions`
+- generated `HAVE_OPENCL` values used by preference/config header generation
+
+The current Linux feature set enables OpenCL, LibRaw, Lua, GPhoto2, JPEG XL,
+WebP, AVIF, HEIF, OpenEXR, OpenJPEG, ICU, OpenMP, map/OSMGpsMap, colord-gtk
+display profile integration, libsecret password storage, G'MIC compressed LUT
+support, and CUPS print support.
+
+The Linux desktop integrations are intentionally kept as system dependencies
+for now. `install_deps.sh` installs the development packages for those
+integrations along with the GTK desktop stack.
+
+Most of those integrations are modeled through `pkg-config`. CUPS and G'MIC
+are modeled through the `system_library_repository` rule because this host's
+packages do not provide usable pkg-config metadata for them.
 
 The Linux configuration mounts `/usr/include` and `/usr/lib/x86_64-linux-gnu`
 into the sandbox. This is required while the `pkg-config` rules refer to host
@@ -156,6 +182,9 @@ system headers and libraries.
   darktable source checkout.
 - `pkg_config_repository`, a custom repository rule in
   `bazel/pkg_config.bzl`, for transitional system dependencies.
+- `system_library_repository`, also in `bazel/pkg_config.bzl`, for transitional
+  system dependencies that have stable headers/libraries but no usable
+  pkg-config file on the target distro.
 
 Vendored local repositories currently modeled through `new_local_repository`
 are:
@@ -319,14 +348,12 @@ remaining optional ImageMagick path is the only ImageMagick-family fallback for
 miscellaneous LDR imports and non-JPEG embedded thumbnails.
 
 Plugin dependencies are now expressed in smaller buckets. `PLUGIN_DEPS` contains
-the common plugin API and GTK/Lua/system boundary dependencies, while individual
-imageio, storage, lighttable, and iop plugin entries add the leaf libraries they
-include directly, such as JPEG, PNG, TIFF, JPEG XL, HEIF, WebP, OpenEXR,
-OpenJPEG, AVIF, Lensfun, libxml2, and curl. This improves BUILD-file ownership
-and makes future pruning easier. It is not yet a complete link-graph
-deduplication because plugin `.so` targets still depend on
-`darktable_core_compile`; replacing that with a usable `libdarktable.so` API
-link remains a separate milestone.
+the common plugin compile-time API surface, `PLUGIN_LINK_DEPS` links plugins to
+the runtime `libdarktable.so` ABI, and individual imageio, storage, lighttable,
+and iop plugin entries add the leaf libraries they include directly, such as
+JPEG, PNG, TIFF, JPEG XL, HEIF, WebP, OpenEXR, OpenJPEG, AVIF, Lensfun,
+libxml2, and curl. Plugins no longer link the full `darktable_core_compile`
+aggregate directly.
 
 ## pkg-config Rule
 
@@ -374,9 +401,13 @@ core source targets:
 - `styles_string.h`
 
 These are generated with Bazel `genrule`s using existing darktable scripts and
-data files wherever practical. The generated `config.h` is currently a
-Linux-focused static approximation of CMake configure output for the milestone
-target.
+data files wherever practical.
+
+The generated `config.h` is produced from the explicit Linux feature map in
+`bazel/darktable_features.bzl`. This keeps feature macros, install paths, and
+extension lists in one Bazel-owned place instead of scattering configure
+results through `.bazelrc` compile flags. It is still a Linux configuration,
+not a portable configure-probe system.
 
 ## Source Targets
 
@@ -395,8 +426,9 @@ localized:
 - `darktable_lua`
 - `darktable_pwstorage`
 
-`darktable_core_compile` joins those libraries and the generated version source
-into the shared core used by the milestone binaries.
+`darktable_core_compile` joins those libraries and the generated version source.
+`libdarktable.so` aggregates that compile graph into the runtime shared core,
+and plugins link against a `cc_import` wrapper for that shared library.
 
 The plugin shared libraries are built and laid out by category:
 
@@ -416,7 +448,12 @@ The corresponding runtime layout targets are:
 
 `bazel/dt_runtime.bzl` assembles the fuller runtime tree. It deliberately uses
 a functional Bazel layout rather than trying to mirror every CMake install
-destination exactly.
+destination exactly. It also copies Bazel runfile shared libraries from Bazel's
+configuration-specific `_solib_*` directory into the stable arranged path
+`lib/darktable/bazel-solib` so plugin `.so` files can resolve Bazel-generated
+shared library dependencies from the arranged runtime tree. The arranged
+`lib/darktable/libdarktable.so` remains the plugin-facing core library; the
+runtime-tree copy intentionally skips Bazel's solib symlink for that file.
 
 IOP plugins are compiled from generated introspection sources produced by
 `tools/introspection/parser.pl`, matching the CMake module pattern. Generic
@@ -453,6 +490,8 @@ Notable details:
   from `src/librawspeed`.
 - `libraw.BUILD` generates a minimal `libraw/libraw_config.h` and builds
   LibRaw with the codecs needed by the current milestone.
+- `libxcf.BUILD` matches CMake's `_DEFAULT_SOURCE` compile definition so Linux
+  `htobe*` byte-order macros are visible.
 - `lua.BUILD` builds the vendored Lua library, excluding the standalone Lua
   command-line tools.
 - `lautoc.BUILD` builds LuaAutoC against the vendored Lua target.
@@ -470,9 +509,12 @@ The Bazel build is not a replacement for the full CMake build yet. Known gaps:
   replacements for Linux-specific feature probes and link options.
 - `bazel_runtime_tree` is a runnable tree, not a distro package or system
   installation target.
-- The generated `config.h` is a Linux milestone approximation rather than a
-  complete configure system.
-- `linux_full` feature coverage is incomplete.
+- The generated `config.h` is driven by an explicit Linux feature map rather
+  than live configure probes. macOS and any other future platform need their own
+  platform feature maps or a principled probe layer.
+- The Linux configuration covers the map, print, colord-gtk, libsecret, and
+  G'MIC feature macros, but broader optional feature parity is still
+  incomplete.
 - Several non-leaf or broader libraries still come from `pkg-config` and system
   packages.
 - Translated desktop/appstream metadata, manpages, documentation, and package

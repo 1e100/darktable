@@ -51,3 +51,39 @@ pkg_config_repository = repository_rule(
     },
     local = True,
 )
+
+def _system_library_repository_impl(ctx):
+    if not ctx.attr.linkopts:
+        fail("linkopts must not be empty")
+
+    for path in ctx.attr.include_paths:
+        source = ctx.path(path)
+        if not source.exists:
+            fail("required system include path does not exist: %s" % path)
+
+        dest = "include/%s" % source.basename
+        ctx.symlink(source, dest)
+
+    ctx.file("BUILD.bazel", """\
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "pkg",
+    copts = {copts},
+    hdrs = glob(["include/**"], allow_empty = True),
+    includes = ["include"],
+    linkopts = {linkopts},
+)
+""".format(copts = repr(ctx.attr.copts), linkopts = repr(ctx.attr.linkopts)))
+
+system_library_repository = repository_rule(
+    implementation = _system_library_repository_impl,
+    attrs = {
+        "copts": attr.string_list(),
+        "include_paths": attr.string_list(),
+        "linkopts": attr.string_list(mandatory = True),
+    },
+    local = True,
+)
