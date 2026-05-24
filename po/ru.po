@@ -6803,10 +6803,6 @@ msgstr "Управление камерой"
 msgid "importing default styles"
 msgstr "Импорт стилей по умолчанию"
 
-#: ../src/common/darktable.c:1814
-msgid "initializing GraphicsMagick"
-msgstr "GraphicsMagick"
-
 #. ImageMagick init
 #: ../src/common/darktable.c:1826
 msgid "initializing ImageMagick"
@@ -7527,10 +7523,6 @@ msgstr ""
 
 #: ../src/common/image.h:225 ../src/imageio/format/pfm.c:120
 msgid "PFM"
-msgstr ""
-
-#: ../src/common/image.h:226
-msgid "GraphicsMagick"
 msgstr ""
 
 #: ../src/common/image.h:227

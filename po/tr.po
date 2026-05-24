@@ -6876,10 +6876,6 @@ msgstr "RGBE"
 msgid "PFM"
 msgstr "PFM"
 
-#: ../src/common/image.h:225
-msgid "GraphicsMagick"
-msgstr "GrafikBüyüsü"
-
 #: ../src/common/image.h:226
 msgid "RawSpeed"
 msgstr "HamHız"

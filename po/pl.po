@@ -6871,10 +6871,6 @@ msgstr "inicjalizacja sygnałów i kontrola"
 msgid "importing default styles"
 msgstr "importowanie domyślnych styli"
 
-#: ../src/common/darktable.c:1796
-msgid "initializing GraphicsMagick"
-msgstr "inicjalizacja GraphicsMagick"
-
 #. ImageMagick init
 #: ../src/common/darktable.c:1808
 msgid "initializing ImageMagick"
@@ -7593,10 +7589,6 @@ msgstr "RGBE"
 #: ../src/common/image.h:224 ../src/imageio/format/pfm.c:120
 msgid "PFM"
 msgstr "PFM"
-
-#: ../src/common/image.h:225
-msgid "GraphicsMagick"
-msgstr "GraphicsMagick"
 
 #: ../src/common/image.h:226
 msgid "RawSpeed"

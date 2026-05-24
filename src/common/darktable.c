@@ -95,9 +95,7 @@
 #include <exiv2/exv_conf.h>  // for EXV_PACKAGE_VERSION
 #include <lensfun.h>  // for lensfun library version macros
 
-#ifdef HAVE_GRAPHICSMAGICK
-#include <magick/api.h>
-#elif defined HAVE_IMAGEMAGICK
+#ifdef HAVE_IMAGEMAGICK
   #ifdef HAVE_IMAGEMAGICK7
   #include <MagickWand/MagickWand.h>
   #else
@@ -869,12 +867,6 @@ char *version = g_strdup_printf(
                "  GMIC                   -> ENABLED  - Compressed LUTs are supported\n"
 #else
                "  GMIC                   -> DISABLED - Compressed LUTs are NOT supported\n"
-#endif
-
-#ifdef HAVE_GRAPHICSMAGICK
-               "  GraphicsMagick         -> ENABLED\n"
-#else
-               "  GraphicsMagick         -> DISABLED\n"
 #endif
 
 #ifdef HAVE_IMAGEMAGICK
@@ -1851,18 +1843,7 @@ int dt_init(int argc,
 
   darktable.guides = dt_guides_init();
 
-#ifdef HAVE_GRAPHICSMAGICK
-  dt_splash_screen_set_progress(_("initializing GraphicsMagick"));
-  /* GraphicsMagick init */
-#ifndef MAGICK_OPT_NO_SIGNAL_HANDER
-  InitializeMagick(darktable.progname);
-
-  // *SIGH*
-  dt_set_signal_handlers();
-#else
-  InitializeMagickEx(darktable.progname, MAGICK_OPT_NO_SIGNAL_HANDER, NULL);
-#endif
-#elif defined HAVE_IMAGEMAGICK
+#ifdef HAVE_IMAGEMAGICK
   /* ImageMagick init */
   dt_splash_screen_set_progress(_("initializing ImageMagick"));
   MagickWandGenesis();
@@ -2246,9 +2227,7 @@ void dt_cleanup()
 #endif
   dt_pwstorage_destroy(darktable.pwstorage);
 
-#ifdef HAVE_GRAPHICSMAGICK
-  DestroyMagick();
-#elif defined HAVE_IMAGEMAGICK
+#ifdef HAVE_IMAGEMAGICK
   MagickWandTerminus();
 #endif
 

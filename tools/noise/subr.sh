@@ -475,19 +475,15 @@ check_exposure() {
 
 	ret=0
 
-	# This is a discussion about how to check which percentile of pixels falls within 
-	# a certain luminosity histogram range with GrahpicsImage:
-	# https://sourceforge.net/p/graphicsmagick/discussion/250738/thread/f64160afbd
-	pixel_percentile=80 # range: [0; 65536] in Image/GraphicsMagick
+	pixel_percentile=80 # range: [0; 65536] in ImageMagick
 	convert_flags_im="-process analyze= -format %[mean] info:-"
-	convert_flags_gm="-process analyze= -format %[BrightnessMean] info:-"
 
 	if convert -version | grep ImageMagick &>/dev/null; then
 		over=$(convert -threshold 99% "$input" $convert_flags_im | awk '{ print int($1) }')
 		under=$(convert -negate -threshold 99% "$input" $convert_flags_im | awk '{ print int($1) }')
 	else
-		over=$(convert -threshold 99% "$input" $convert_flags_gm | awk '{ print int($1) }')
-		under=$(convert -negate -threshold 99% "$input" $convert_flags_gm | awk '{ print int($1) }')
+		echo "ImageMagick convert is required for noise profile histogram checks" >&2
+		return 1
 	fi
 
 	if [ "$over" ] && [ "$over" -lt $pixel_percentile ]; then

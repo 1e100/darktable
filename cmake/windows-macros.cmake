@@ -159,24 +159,6 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
   endif()
 
-  if(GraphicsMagick_FOUND)
-    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
-      #GRAPHICKSMAGICK
-      ${MINGW_PATH}/libltdl*.dll
-      ${MINGW_PATH}/libGraphicsMagick-*.dll
-      #CODERS
-      ${MINGW_PATH}/libbrotli*.dll
-      ${MINGW_PATH}/libbz2*.dll
-      ${MINGW_PATH}/libhwy.dll
-      ${MINGW_PATH}/libjasper.dll
-      ${MINGW_PATH}/libjxl*.dll
-      ${MINGW_PATH}/libsharpyuv*.dll
-      ${MINGW_PATH}/libwebp-*.dll
-      ${MINGW_PATH}/libwebpmux*.dll
-    )
-    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
-  endif()
-
   if(ImageMagick_FOUND)
     file(GLOB TMP_SYSTEM_RUNTIME_LIBS
       #IMAGEMAGICK
@@ -297,17 +279,6 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
         COMPONENT DTApplication
         PATTERN "*.a" EXCLUDE
         PATTERN "usb.dll" EXCLUDE)
-  endif()
-
-  # Add GraphicsMagick libraries
-  if(GraphicsMagick_FOUND)
-    install(DIRECTORY
-        "${MINGW_PATH}/../lib/GraphicsMagick-${GraphicsMagick_VERSION}/modules-Q16/coders"
-        DESTINATION lib/GraphicsMagick-${GraphicsMagick_VERSION}/modules-Q16/
-        COMPONENT DTApplication
-        FILES_MATCHING PATTERN "*"
-        # For some reason *.la files must be kept alongside DLLs
-        PATTERN "*.a" EXCLUDE)
   endif()
 
   # Add ImageMagick libraries

@@ -13189,10 +13189,6 @@ msgstr "rgbe"
 msgid "pfm"
 msgstr "pfm"
 
-#: ../src/libs/metadata_view.c:407
-msgid "GraphicsMagick"
-msgstr "GraphicsMagick"
-
 #: ../src/libs/metadata_view.c:408
 msgid "rawspeed"
 msgstr "raw-hastighed"

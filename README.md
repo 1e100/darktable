@@ -263,7 +263,7 @@ Optional dependencies (no version requirement):
 * CUPS *(for print mode support)*
 * OpenEXR *(for EXR import & export)*
 * OpenJPEG *(for JPEG 2000 import & export)*
-* GraphicsMagick or ImageMagick *(for misc image format import)*
+* ImageMagick *(for misc image format import)*
 
 To install all the dependencies on Linux systems, you may use the source repository of your distribution.
 This will install the same packages that were used to build the official darktable package on your system.

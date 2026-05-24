@@ -26,8 +26,7 @@ export DESTDIR=../AppDir
 # The CLI parameters of this script will be passed verbatim to build.sh.
 # This allows you to conveniently manage the enabling/disabling of various
 # features. For example, you can easily build darktable with support for
-# ImageMagick instead of GraphicsMagick by running this script with the
-# parameters `--disable-graphicsmagick --enable-imagemagick`
+# ImageMagick by running this script with the parameter `--enable-imagemagick`
 ./build.sh --enable-ai --build-dir ./build/ --prefix /usr --build-type Release $@ --install -- "-DBINARY_PACKAGE_BUILD=1 -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DDONT_USE_INTERNAL_LUA=Off -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
 
 # Sanitize path to executable in the .desktop (it will be handled by AppImage).

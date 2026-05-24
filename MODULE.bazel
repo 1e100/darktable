@@ -206,18 +206,7 @@ pkg_config_repository(
         "atk",
         "librsvg-2.0",
         "json-glib-1.0",
-    ],
-)
-
-# Transitional probe target used while native hermetic third-party archives are
-# added one by one. The GTK stack above is the intended long-term system
-# exception; this target makes early Linux build evaluation expose concrete
-# missing host packages instead of failing later with unresolved compiler flags.
-pkg_config_repository(
-    name = "darktable_linux_system_probe",
-    packages = [
         "wayland-client",
-        "GraphicsMagick",
     ],
 )
 

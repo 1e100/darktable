@@ -18,7 +18,7 @@
 
 #include "common/darktable.h"
 #include "imageio_common.h"
-#include "imageio_gm.h"
+#include "imageio_im.h"
 #include "develop/develop.h"
 #include "common/exif.h"
 #include "common/colorspaces.h"
@@ -155,7 +155,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img,
                                                            "icc",
                                                            &profile_length);
 
-  // No alias support for profile names (unlike GraphicsMagick),
+  // ImageMagick does not alias profile names, so try both spellings.
   // so we need to try "icm" if we didn't get an "icc" profile
   if(profile_data == NULL)
     profile_data = (uint8_t *)MagickGetImageProfile(image,

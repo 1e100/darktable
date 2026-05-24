@@ -397,7 +397,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   if(t.tiff == NULL) return DT_IMAGEIO_LOAD_FAILED;
 
   // This loader does not implement reading of tiled files, so we explicitly
-  // offload them to the fallback (Graphics/Image)Magic loader ASAP instead
+  // offload them to the fallback ImageMagick loader ASAP instead
   // of going as far as trying to read the scanline and exiting the loader
   // due to TIFFReadScanline failure.
   if(TIFFIsTiled(t.tiff))

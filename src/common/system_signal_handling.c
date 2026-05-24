@@ -51,8 +51,8 @@ typedef void(dt_signal_handler_t)(int);
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 #endif
 
-// Dear GraphicsMagick, please stop messing with the stuff that you should not be touching at all.
-// Based on GM's InitializeMagickSignalHandlers() and MagickSignalHandlerMessage()
+// Some image backends may override process signal handlers. Keep darktable's
+// handlers restorable after such initialization.
 #if !defined(_WIN32)
 static const int _signals_to_preserve[] = { SIGHUP,  SIGINT,  SIGQUIT, SIGILL,  SIGABRT, SIGBUS, SIGFPE,
                                             SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGXCPU, SIGXFSZ };
@@ -232,9 +232,8 @@ void dt_set_signal_handlers()
   Set up exception handler for backtrace on Windows
   Works when there is NO SIGSEGV handler installed
 
-  SetUnhandledExceptionFilter handler must be saved on the first invocation as GraphicsMagick
-  is overwriting SetUnhandledExceptionFilter and all other signals in InitializeMagick()
-  Eventually InitializeMagick() should be fixed upstream not to ignore existing exception handlers
+  SetUnhandledExceptionFilter handler must be saved on the first invocation
+  because image backends may overwrite SetUnhandledExceptionFilter.
   */
 
   dt_set_unhandled_exception_handler_win();
@@ -255,4 +254,3 @@ void dt_set_signal_handlers()
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

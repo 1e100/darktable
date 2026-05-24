@@ -6974,11 +6974,6 @@ msgid "importing default styles"
 msgstr "Importando estilos predeterminados"
 
 # dt•v5.0
-#: ../src/common/darktable.c:1803
-msgid "initializing GraphicsMagick"
-msgstr "Inicializando GraphicsMagick"
-
-# dt•v5.0
 #. ImageMagick init
 #: ../src/common/darktable.c:1815
 msgid "initializing ImageMagick"
@@ -7745,10 +7740,6 @@ msgstr "RGBE"
 #: ../src/common/image.h:224 ../src/imageio/format/pfm.c:120
 msgid "PFM"
 msgstr "PFM"
-
-#: ../src/common/image.h:225
-msgid "GraphicsMagick"
-msgstr "GraphicsMagick"
 
 #: ../src/common/image.h:226
 msgid "RawSpeed"

@@ -166,9 +166,8 @@ Keep these system-provided for now:
 - json-glib
 - Wayland client integration used through GTK/GDK desktop backend handling
 
-Remaining transitional probe dependencies include:
-
-- GraphicsMagick
+There is no remaining required transitional probe repository. Wayland client
+symbols are part of the GTK/GDK system boundary.
 
 Optional desktop/system feature probes include:
 
@@ -219,8 +218,11 @@ Optional desktop/system feature probes include:
 ## Remaining Work
 
 - Continue evaluating manageable leaf dependencies for in-tree builds.
-- Defer broad or gnarly stacks: GTK/Cairo/Pango/Rsvg/GLib,
-  Wayland/desktop integration, and GraphicsMagick.
+- Defer broad or gnarly stacks: GTK/Cairo/Pango/Rsvg/GLib and
+  Wayland/desktop integration.
+- GraphicsMagick support was intentionally removed rather than migrated. Do not
+  reintroduce it; use the optional ImageMagick path for miscellaneous LDR
+  fallback imports if that feature is intentionally enabled.
 - Finish plugin link-graph cleanup. Plugin deps are split by plugin family and
   by direct codec/header usage, but plugins still depend on
   `darktable_core_compile`; replacing that edge with a correct shared

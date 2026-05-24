@@ -224,7 +224,6 @@ CORE_HDRS = [
     "imageio/imageio_dng.h",
     "imageio/imageio_exr.h",
     "imageio/imageio_exr.hh",
-    "imageio/imageio_gm.h",
     "imageio/imageio_heif.h",
     "imageio/imageio_im.h",
     "imageio/imageio_j2k.h",
@@ -313,7 +312,6 @@ PUBLIC_HEADER_DEPS = [
     "//third_party/lcms2:lcms2",
     "//third_party/png:png",
     "//third_party/sqlite:sqlite",
-    "@darktable_linux_system_probe//:pkg",
     "@gtk_stack//:pkg",
     "@lautoc//:lautoc",
     "@lua_internal//:lua",
@@ -358,7 +356,6 @@ CORE_DEPS = [
     "@lua_internal//:lua",
     "@whereami//:whereami",
 ] + BAZEL_LEAF_DEPS + [
-    "@darktable_linux_system_probe//:pkg",
     "@gtk_stack//:pkg",
 ]
 
@@ -622,7 +619,6 @@ PLUGIN_DEPS = [
     "//third_party/lcms2:lcms2",
     "//third_party/sqlite:sqlite",
     ":potrace_system",
-    "@darktable_linux_system_probe//:pkg",
     "@gtk_stack//:pkg",
     "@lautoc//:lautoc",
     "@lua_internal//:lua",

@@ -50,7 +50,6 @@
                 glib
                 glib-networking
                 gmic
-                graphicsmagick
                 gtk3
                 icu
                 ilmbase

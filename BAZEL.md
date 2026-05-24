@@ -13,7 +13,7 @@ Use Bazelisk, or a `bazel` launcher backed by Bazelisk. The repository pins the
 Bazel version in `.bazelversion`.
 
 Current Linux host packages outside the pinned Bzlmod/source-archive closure are
-the GTK desktop stack, GraphicsMagick/Wayland transitional probes, and GNU
+the GTK desktop stack, Wayland client integration, and GNU
 libltdl for libgphoto2's upstream module loader. On Debian/Ubuntu, the ltdl
 package is:
 
@@ -127,7 +127,7 @@ The root `.bazelrc` enables Bzlmod and sets common C/C++ defaults:
 - C defaults to C99.
 - `HAVE_CONFIG_H`, `_XOPEN_SOURCE=700`, and PIC are applied globally.
 - The Linux configuration enables the feature macros needed by the current
-  milestone: OpenCL, LibRaw, Lua, GPhoto2, GraphicsMagick, JPEG XL, WebP, AVIF,
+  milestone: OpenCL, LibRaw, Lua, GPhoto2, JPEG XL, WebP, AVIF,
   HEIF, OpenEXR, OpenJPEG, ICU, and OpenMP.
 
 The `linux_full` configuration exists as a placeholder for fuller desktop
@@ -136,8 +136,8 @@ GMIC, and print support, but those features are not fully modeled as Bazel
 targets yet.
 
 The Linux configuration mounts `/usr/include` and `/usr/lib/x86_64-linux-gnu`
-into the sandbox. This is required while the transitional `pkg-config` rules
-refer to host system headers and libraries.
+into the sandbox. This is required while the `pkg-config` rules refer to host
+system headers and libraries.
 
 ## Bzlmod Layout
 
@@ -299,22 +299,24 @@ The intended long-term boundary is:
   through Bzlmod.
 
 The current build is intentionally transitional. `@gtk_stack` represents the
-explicit GTK-system boundary. `@darktable_linux_system_probe` aggregates
-unmigrated dependencies through `pkg-config` so the Linux build can compile and
-link while native external repositories are added incrementally.
+explicit GTK-system boundary, including Wayland client integration used through
+the GTK/GDK desktop backend.
 
 The migrated leaf set is zlib, SQLite, pugixml, curl, Exiv2, libgphoto2,
 JPEG XL, libpng, libjpeg-turbo, libxml2, WebP, libtiff, Little CMS, OpenJPEG,
 AVIF, HEIF, Imath, OpenEXR, ICU, and Lensfun.
 RawSpeed and LibRaw now depend on the root-owned JPEG/zlib aliases instead of
-using `-ljpeg`, `-lz`, and the aggregate pkg-config probe.
+using `-ljpeg`, `-lz`, or the GTK/system pkg-config boundary for those leaf
+libraries.
 
-Leaf dependencies still flowing through the transitional probe include Wayland
-client symbols, GraphicsMagick, and similar libraries. Wayland remains
-system-provided with GTK/GDK because the code uses it as part of the GTK desktop
-backend boundary rather than as an isolated leaf library. GNU libltdl is also
-system-provided for now because libgphoto2 uses it as its upstream-supported
-portable module loader.
+Wayland remains system-provided with GTK/GDK because the code uses it as part of
+the GTK desktop backend boundary rather than as an isolated leaf library. GNU
+libltdl is also system-provided for now because libgphoto2 uses it as its
+upstream-supported portable module loader.
+
+GraphicsMagick support was intentionally removed instead of migrated. The
+remaining optional ImageMagick path is the only ImageMagick-family fallback for
+miscellaneous LDR imports and non-JPEG embedded thumbnails.
 
 Plugin dependencies are now expressed in smaller buckets. `PLUGIN_DEPS` contains
 the common plugin API and GTK/Lua/system boundary dependencies, while individual

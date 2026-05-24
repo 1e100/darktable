@@ -18,7 +18,6 @@ build:linux --copt=-DHAVE_OPENCL
 build:linux --copt=-DHAVE_LIBRAW
 build:linux --copt=-DUSE_LUA
 build:linux --copt=-DHAVE_GPHOTO2
-build:linux --copt=-DHAVE_GRAPHICSMAGICK
 build:linux --copt=-DHAVE_LIBJXL
 build:linux --copt=-DHAVE_WEBP
 build:linux --copt=-DHAVE_LIBAVIF=1

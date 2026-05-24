@@ -23498,9 +23498,6 @@ msgstr "Aksie"
 #~ msgid "pfm"
 #~ msgstr "pfm"
 
-#~ msgid "GraphicsMagick"
-#~ msgstr "GraphicsMagick"
-
 #~ msgid "rawspeed"
 #~ msgstr "rawspeed"
 

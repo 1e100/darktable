@@ -12839,10 +12839,6 @@ msgstr ""
 msgid "pfm"
 msgstr ""
 
-#: ../src/libs/metadata_view.c:407
-msgid "GraphicsMagick"
-msgstr ""
-
 #: ../src/libs/metadata_view.c:408
 msgid "rawspeed"
 msgstr ""

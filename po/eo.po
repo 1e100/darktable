@@ -6212,10 +6212,6 @@ msgstr "rgbe"
 msgid "pfm"
 msgstr "pfm"
 
-#: ../src/common/image.h:177
-msgid "GraphicsMagick"
-msgstr "GraphicsMagick"
-
 #: ../src/common/image.h:178
 msgid "rawspeed"
 msgstr "rawspeed"

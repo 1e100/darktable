@@ -6718,10 +6718,6 @@ msgstr "正在初始化訊號和控制"
 msgid "importing default styles"
 msgstr "正在匯入預設風格檔"
 
-#: ../src/common/darktable.c:1796
-msgid "initializing GraphicsMagick"
-msgstr "正在初始化 GraphicsMagick"
-
 #. ImageMagick init
 #: ../src/common/darktable.c:1808
 msgid "initializing ImageMagick"
@@ -7399,10 +7395,6 @@ msgstr "RGBE"
 #: ../src/common/image.h:224 ../src/imageio/format/pfm.c:120
 msgid "PFM"
 msgstr "PFM"
-
-#: ../src/common/image.h:225
-msgid "GraphicsMagick"
-msgstr "GraphicsMagick"
 
 #: ../src/common/image.h:226
 msgid "RawSpeed"

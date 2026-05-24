@@ -69,11 +69,7 @@
 #include "imageio/imageio_libraw.h"
 #endif
 
-#ifdef HAVE_GRAPHICSMAGICK
-#include "imageio/imageio_gm.h"
-#include <magick/api.h>
-#include <magick/blob.h>
-#elif defined HAVE_IMAGEMAGICK
+#ifdef HAVE_IMAGEMAGICK
 #include "imageio/imageio_im.h"
   #ifdef HAVE_IMAGEMAGICK7
   #include <MagickWand/MagickWand.h>
@@ -174,10 +170,6 @@ static dt_imageio_retval_t _unsupported_type(dt_image_t *img,
 
 #ifndef HAVE_LIBHEIF
 #define dt_imageio_open_heif _unsupported_type
-#endif
-
-#ifndef HAVE_GRAPHICSMAGICK
-#define dt_imageio_open_gm _unsupported_type
 #endif
 
 #ifndef HAVE_IMAGEMAGICK
@@ -694,61 +686,7 @@ gboolean dt_imageio_large_thumbnail(const char *filename,
   }
   else
   {
-#ifdef HAVE_GRAPHICSMAGICK
-    ExceptionInfo exception;
-    Image *image = NULL;
-    ImageInfo *image_info = NULL;
-
-    GetExceptionInfo(&exception);
-    image_info = CloneImageInfo((ImageInfo *)NULL);
-
-    image = BlobToImage(image_info, buf, bufsize, &exception);
-
-    if(exception.severity != UndefinedException)
-      CatchException(&exception);
-
-    if(!image)
-    {
-      dt_print(DT_DEBUG_ALWAYS,
-               "[dt_imageio_large_thumbnail GM] thumbnail not found?");
-      goto error_gm;
-    }
-
-    *width = image->columns;
-    *height = image->rows;
-    *color_space = DT_COLORSPACE_SRGB; // FIXME: this assumes that
-                                       // embedded thumbnails are
-                                       // always srgb
-
-    *buffer = dt_alloc_align_uint8(4 * image->columns * image->rows);
-    if(!*buffer) goto error_gm;
-
-    for(uint32_t row = 0; row < image->rows; row++)
-    {
-      uint8_t *bufprt = *buffer + (size_t)4 * row * image->columns;
-      const int gm_ret = DispatchImage(image, 0, row, image->columns, 1, "RGBP",
-                                       CharPixel, bufprt, &exception);
-
-      if(exception.severity != UndefinedException) CatchException(&exception);
-
-      if(gm_ret != MagickPass)
-      {
-        dt_print(DT_DEBUG_ALWAYS,
-                 "[dt_imageio_large_thumbnail GM] error_gm reading thumbnail");
-        dt_free_align(*buffer);
-        *buffer = NULL;
-        goto error_gm;
-      }
-    }
-
-    res = FALSE;
-
-  error_gm:
-    if(image) DestroyImage(image);
-    if(image_info) DestroyImageInfo(image_info);
-    DestroyExceptionInfo(&exception);
-    if(res) goto error;
-#elif defined HAVE_IMAGEMAGICK
+#ifdef HAVE_IMAGEMAGICK
     MagickWand *image = NULL;
     MagickBooleanType mret;
 
@@ -800,9 +738,7 @@ error_im:
 #else
     dt_print(DT_DEBUG_ALWAYS,
       "[dt_imageio_large_thumbnail] error: The thumbnail image is not in "
-      "JPEG format, and DT was built without neither GraphicsMagick or "
-      "ImageMagick. Please rebuild DT with GraphicsMagick or ImageMagick "
-      "support enabled.");
+      "JPEG format, and DT was built without ImageMagick support enabled.");
 #endif
   }
 
@@ -1577,16 +1513,14 @@ error_early:
 
 
 // fallback read method in case file could not be opened yet.
-// use GraphicsMagick (if supported) to read exotic LDRs
+// use ImageMagick (if supported) to read exotic LDRs
 dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img,
                                            const char *filename,
                                            dt_mipmap_buffer_t *buf)
 {
   // if buf is NULL, don't proceed
   if(!buf) return DT_IMAGEIO_OK;
-  dt_imageio_retval_t ret = dt_imageio_open_gm(img, filename, buf);
-  if(_image_handled(ret)) return ret;
-  ret = dt_imageio_open_im(img, filename, buf);
+  dt_imageio_retval_t ret = dt_imageio_open_im(img, filename, buf);
   if(_image_handled(ret)) return ret;
 
   return DT_IMAGEIO_LOAD_FAILED;
@@ -1658,7 +1592,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
     if(!_image_handled(ret))
       ret = dt_imageio_open_libraw(img, filename, buf);
 
-    // final fallback that tries to open file via GraphicsMagick or ImageMagick
+    // final fallback that tries to open file via ImageMagick
     if(!_image_handled(ret))
       ret = dt_imageio_open_exotic(img, filename, buf);
 

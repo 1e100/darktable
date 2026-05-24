@@ -21,7 +21,6 @@ installDir="${buildDir}/macosx"
 
 # Options
 options=" \
-    -DUSE_GRAPHICSMAGICK=OFF \
     -DUSE_IMAGEMAGICK=ON \
     -DBUILD_CURVE_TOOLS=ON \
     -DBUILD_NOISE_TOOLS=ON

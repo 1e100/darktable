@@ -79,7 +79,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
                                     const char *filename,
                                     dt_mipmap_buffer_t *buf);
 // tries to open the files not opened by the other routines using
-// GraphicsMagick (if supported)
+// ImageMagick (if supported)
 dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename,
                                            dt_mipmap_buffer_t *buf);
 

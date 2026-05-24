@@ -914,10 +914,7 @@ int main(int argc, char *argv[])
   dt_pdf_t *pdf = dt_pdf_start(argv[argc - 1], page_width, page_height,
                                360, DT_PDF_STREAM_ENCODER_FLATE);
 
-  // we can load icc profiles and assign them to images. For testing
-  // something like
-  // https://github.com/boxerab/graphicsmagick/raw/master/profiles/BRG.icc
-  // works really good
+  // we can load icc profiles and assign them to images.
   int icc_id = dt_pdf_add_icc(pdf, "BRG.icc");
 
   const int n_images = argc - 2;

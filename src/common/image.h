@@ -196,17 +196,16 @@ typedef enum dt_image_loader_t
   LOADER_EXR      =  5,
   LOADER_RGBE     =  6,
   LOADER_PFM      =  7,
-  LOADER_GM       =  8,
-  LOADER_RAWSPEED =  9,
-  LOADER_PNM      = 10,
-  LOADER_AVIF     = 11,
-  LOADER_IM       = 12,
-  LOADER_HEIF     = 13,
-  LOADER_LIBRAW   = 14,
-  LOADER_WEBP     = 15,
-  LOADER_JPEGXL   = 16,
-  LOADER_QOI      = 17,
-  LOADER_COUNT    = 18 // keep last
+  LOADER_RAWSPEED =  8,
+  LOADER_PNM      =  9,
+  LOADER_AVIF     = 10,
+  LOADER_IM       = 11,
+  LOADER_HEIF     = 12,
+  LOADER_LIBRAW   = 13,
+  LOADER_WEBP     = 14,
+  LOADER_JPEGXL   = 15,
+  LOADER_QOI      = 16,
+  LOADER_COUNT    = 17 // keep last
 } dt_image_loader_t;
 
 static const struct
@@ -223,7 +222,6 @@ static const struct
   { N_("EXR"),             'e'},
   { N_("RGBE"),            'R'},
   { N_("PFM"),             'P'},
-  { N_("GraphicsMagick"),  'g'},
   { N_("RawSpeed"),        'r'},
   { N_("Netpbm"),          'n'},
   { N_("AVIF"),            'a'},
