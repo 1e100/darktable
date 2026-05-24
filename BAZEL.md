@@ -116,7 +116,10 @@ refer to host system headers and libraries.
 - `rules_cc` for C/C++ rules.
 - `rules_pkg` for future packaging work.
 - Bazel Central Registry modules for migrated leaf libraries: `zlib`,
-  `sqlite3`, `pugixml`, `libpng`, and `libjpeg_turbo`.
+  `sqlite3`, `pugixml`, `libpng`, `libjpeg_turbo`, `libxml2`, `libwebp`,
+  and `libtiff`.
+- `http_archive`, declared through Bzlmod `use_repo_rule`, for pinned upstream
+  release archives that are not available as usable BCR modules yet.
 - `new_local_repository` for vendored source trees already present in the
   darktable source checkout.
 - `pkg_config_repository`, a custom repository rule in
@@ -143,15 +146,46 @@ using `//third_party/jpeg:jpeg` even though the current provider is
 The current aliases are:
 
 - `//third_party/jpeg:jpeg`
+- `//third_party/lcms2:lcms2`
+- `//third_party/openjpeg:openjpeg`
 - `//third_party/png:png`
 - `//third_party/pugixml:pugixml`
 - `//third_party/sqlite:sqlite`
+- `//third_party/tiff:tiff`
+- `//third_party/webp:webp`
+- `//third_party/webp:webpmux`
+- `//third_party/xml:xml`
 - `//third_party/zlib:zlib`
 
 The `libpng` BCR module is patched through `single_version_override` to add
 `PNG_NO_CONFIG_H`. The repository-wide Bazel configuration defines
 `HAVE_CONFIG_H` for darktable sources, and libpng's upstream sources otherwise
 interpret that as a request for an Autoconf-generated `config.h`.
+
+The `libwebp` BCR module is patched through `single_version_override` to undefine
+`HAVE_CONFIG_H` for libwebp compilation. This avoids libwebp interpreting
+darktable's repository-wide configure macro as a request for its own generated
+`src/webp/config.h`.
+
+The `libxml2` BCR module is patched through `single_version_override` so its
+root `config.h` does not leak `PACKAGE_*` macros into darktable compile
+actions. Libxml2 itself still sees those macros because the patch only suppresses
+them when darktable's Bazel compile define is present.
+
+Little CMS and OpenJPEG are currently pinned source archives rather than BCR
+modules:
+
+- `@lcms2` uses Little CMS 2.19 from the upstream GitHub release archive with a
+  small `third_party/lcms2/lcms2.BUILD` overlay.
+- `@openjpeg` uses OpenJPEG 2.5.4 from the upstream GitHub release archive with
+  a small `third_party/openjpeg/openjpeg.BUILD` overlay and an
+  `openjpeg_config.patch` that materializes the CMake-generated OpenJPEG config
+  headers for the library build.
+
+Darktable sources force-include the generated Bazel config as `src/config.h`.
+Using the package-qualified path is intentional: several migrated dependencies
+ship their own `config.h`, and plain `config.h` is ambiguous once those include
+roots are in the action.
 
 ## Hermeticity Boundary
 
@@ -167,15 +201,15 @@ explicit GTK-system boundary. `@darktable_linux_system_probe` aggregates
 unmigrated dependencies through `pkg-config` so the Linux build can compile and
 link while native external repositories are added incrementally.
 
-The first migrated leaf set is zlib, SQLite, pugixml, libpng, and
-libjpeg-turbo. RawSpeed and LibRaw now depend on the root-owned JPEG/zlib
-aliases instead of using `-ljpeg`, `-lz`, and the aggregate pkg-config probe.
+The migrated leaf set is zlib, SQLite, pugixml, libpng, libjpeg-turbo, libxml2,
+WebP, libtiff, Little CMS, and OpenJPEG. RawSpeed and LibRaw now depend on the
+root-owned JPEG/zlib aliases instead of using `-ljpeg`, `-lz`, and the
+aggregate pkg-config probe.
 
 Leaf dependencies still flowing through the transitional probe include libcurl,
-Exiv2, lensfun, libtiff, lcms2, libxml2, libgphoto2, OpenJPEG, WebP,
-AVIF/HEIF/JPEG XL, Wayland client symbols, OpenEXR/Imath, GraphicsMagick, ICU,
-SDL, and similar libraries. `TODO.md` tracks which of these are good candidates
-for later pinned source builds.
+Exiv2, lensfun, libgphoto2, AVIF/HEIF/JPEG XL, Wayland client symbols,
+OpenEXR/Imath, GraphicsMagick, ICU, SDL, and similar libraries. `TODO.md`
+tracks which of these are good candidates for later pinned source builds.
 
 ## pkg-config Rule
 
@@ -322,7 +356,8 @@ The Bazel build is not a replacement for the full CMake build yet. Known gaps:
 - The generated `config.h` is a Linux milestone approximation rather than a
   complete configure system.
 - `linux_full` feature coverage is incomplete.
-- Many leaf libraries still come from `pkg-config` and system packages.
+- Several non-leaf or broader libraries still come from `pkg-config` and system
+  packages.
 - Translated desktop/appstream metadata, manpages, documentation, and package
   artifacts are not modeled.
 - PortMidi is not modeled in the base Linux plugin milestone because this host

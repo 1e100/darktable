@@ -9,6 +9,8 @@ darktable_generated_headers()
 
 COMMON_COPTS = [
     "-include",
+    "src/config.h",
+    "-include",
     "common/module_api.h",
     "-Wno-error",
 ]
@@ -279,9 +281,15 @@ GENERATED_HDRS = [
 
 BAZEL_LEAF_DEPS = [
     "//third_party/jpeg:jpeg",
+    "//third_party/lcms2:lcms2",
+    "//third_party/openjpeg:openjpeg",
     "//third_party/png:png",
     "//third_party/pugixml:pugixml",
     "//third_party/sqlite:sqlite",
+    "//third_party/tiff:tiff",
+    "//third_party/webp:webp",
+    "//third_party/webp:webpmux",
+    "//third_party/xml:xml",
     "//third_party/zlib:zlib",
 ]
 

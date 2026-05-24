@@ -1,0 +1,39 @@
+diff --git a/src/lib/openjp2/opj_config.h b/src/lib/openjp2/opj_config.h
+new file mode 100644
+index 0000000..fed2381
+--- /dev/null
++++ b/src/lib/openjp2/opj_config.h
+@@ -0,0 +1,8 @@
++#ifndef OPJ_CONFIG_H_INCLUDED
++#define OPJ_CONFIG_H_INCLUDED
++
++#define OPJ_VERSION_MAJOR 2
++#define OPJ_VERSION_MINOR 5
++#define OPJ_VERSION_BUILD 4
++
++#endif
+diff --git a/src/lib/openjp2/opj_config_private.h b/src/lib/openjp2/opj_config_private.h
+new file mode 100644
+index 0000000..a2e82f5
+--- /dev/null
++++ b/src/lib/openjp2/opj_config_private.h
+@@ -0,0 +1,19 @@
++#define OPJ_PACKAGE_VERSION "2.5.4"
++
++#define _LARGEFILE_SOURCE 1
++#define _FILE_OFFSET_BITS 64
++#define OPJ_HAVE_FSEEKO
++
++#define OPJ_HAVE_MALLOC_H
++#define OPJ_HAVE_ALIGNED_ALLOC
++#define OPJ_HAVE_POSIX_MEMALIGN
++
++#if !defined(_POSIX_C_SOURCE)
++#if defined(OPJ_HAVE_FSEEKO) || defined(OPJ_HAVE_POSIX_MEMALIGN)
++#define _POSIX_C_SOURCE 200112L
++#endif
++#endif
++
++#if defined(__APPLE__) && defined(__BIG_ENDIAN__)
++#define OPJ_BIG_ENDIAN
++#endif

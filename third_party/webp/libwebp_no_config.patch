@@ -1,0 +1,11 @@
+--- BUILD.bazel
++++ BUILD.bazel
+@@ -154,7 +154,7 @@ WEBP_SRCS = [
+     "//conditions:default": [],
+ })
+ 
+-WEBP_COPTS = select({
++WEBP_COPTS = ["-UHAVE_CONFIG_H"] + select({
+     "@platforms//os:windows": [],
+     "//conditions:default": ["-Wno-unused-but-set-variable"],
+ }) + select({

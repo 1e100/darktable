@@ -1,0 +1,18 @@
+--- config.h
++++ config.h
+@@ -26,6 +26,7 @@
+ /* Define to the sub-directory where libtool stores uninstalled libraries. */
+ #define LT_OBJDIR ".libs/"
+ 
++#ifndef DT_BAZEL_BUILD
+ /* Name of package */
+ #define PACKAGE "libxml2"
+ 
+@@ -48,6 +49,7 @@
+ 
+ /* Version number of package */
+ #define VERSION "2.15.3"
++#endif
+ 
+ /* System configuration directory (/etc) */
+ #define XML_SYSCONFDIR "/usr/local/etc"

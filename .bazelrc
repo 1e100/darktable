@@ -12,6 +12,8 @@ build --linkopt=-lm
 
 build:linux --cpu=k8
 build:linux --copt=-DDT_BAZEL_BUILD
+build:linux --copt=-DHAVE_OMP_FIRSTPRIVATE_WITH_CONST
+build:linux --copt=-DCL_TARGET_OPENCL_VERSION=300
 build:linux --copt=-DHAVE_OPENCL
 build:linux --copt=-DHAVE_LIBRAW
 build:linux --copt=-DUSE_LUA

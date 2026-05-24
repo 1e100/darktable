@@ -1,8 +1,8 @@
 # Bazel Build TODO
 
-- Continue moving leaf `pkg-config` dependencies in-tree under `third_party/` and build them from pinned source archives with Bzlmod. The first migrated BCR-backed set is zlib, SQLite, pugixml, libpng, and libjpeg-turbo. Keep the GTK desktop stack as the explicit system exception.
-- Next leaf candidates: lcms2, libxml2, libtiff, OpenJPEG, lensfun, and PortMidi. Prefer BCR modules where usable; otherwise add local `third_party/<name>` overlays with pinned source archives.
-- Revisit WebP migration. BCR has `libwebp`, but the current module overlay failed in this repo with a missing generated `src/webp/config.h`; keep `libwebp` and `libwebpmux` on `pkg-config` until that is patched or replaced with a local overlay.
+- Continue moving leaf `pkg-config` dependencies in-tree under `third_party/` and build them from pinned source archives with Bzlmod. Migrated leaves now include zlib, SQLite, pugixml, libpng, libjpeg-turbo, libxml2, WebP, libtiff, Little CMS, and OpenJPEG. Keep the GTK desktop stack as the explicit system exception.
+- Keep evaluating remaining plausible leaves before tackling broad stacks. Lensfun is the main remaining candidate, but it needs runtime database packaging in addition to the library. PortMidi is optional and should remain separate from the base milestone unless the MIDI plugin is intentionally enabled.
+- Track BCR/source-overlay maintenance for migrated leaves: libwebp currently needs a BCR patch to avoid its missing generated `src/webp/config.h`, libxml2 needs a BCR patch to avoid leaking package `config.h` macros into darktable compile actions, and OpenJPEG currently needs a small source-archive patch to materialize CMake-generated config headers.
 - Defer gnarly or broad dependency stacks: GTK/Cairo/Pango/Rsvg/GLib, libgphoto2, Wayland/desktop integration, Exiv2, libcurl/TLS, OpenEXR/Imath, ICU, GraphicsMagick, SDL, AVIF/HEIF/JPEG XL.
 - Expand `linux_full` feature coverage: map/OSMGpsMap, print/CUPS, colord/colord-gtk, libsecret, GMIC compressed LUTs, ImageMagick, AI/ONNXRuntime, cmstest, chart tools/tests, basecurve tools, and noise tools.
 - Add PortMidi support for the MIDI lighttable plugin once `portmidi.h`, `libportmidi`, and/or `portmidi.pc` are available on the build host or modeled hermetically.
