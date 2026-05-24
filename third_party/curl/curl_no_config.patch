@@ -1,0 +1,11 @@
+--- BUILD.bazel
++++ BUILD.bazel
+@@ -294,7 +294,7 @@
+             "lib/**/*.h",
+         ]),
+         hdrs = glob(["include/curl/*.h"]),
+-        copts = select({
++        copts = ["-UHAVE_CONFIG_H"] + select({
+             "@platforms//os:windows": [
+                 "/DBUILDING_LIBCURL",
+                 "/DCURL_DISABLE_LDAP",

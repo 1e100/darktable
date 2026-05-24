@@ -284,6 +284,7 @@ GENERATED_HDRS = [
 
 BAZEL_LEAF_DEPS = [
     "//third_party/avif:avif",
+    "//third_party/curl:curl",
     "//third_party/heif:heif",
     "//third_party/icu:icu",
     "//third_party/imath:imath",

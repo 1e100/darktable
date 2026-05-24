@@ -221,6 +221,10 @@ darktable's existing fallback to `share/lensfun/version_1` next to
 `share/darktable`; `//src:bazel_runtime_tree` packages the release XML database
 there.
 
+curl uses the BCR `curl` module and is exposed through `//third_party/curl:curl`.
+The BCR module owns the TLS backend and support-library closure; darktable does
+not keep a parallel `pkg-config` libcurl dependency.
+
 Little CMS and OpenJPEG are currently pinned source archives rather than BCR
 modules:
 
@@ -251,13 +255,13 @@ unmigrated dependencies through `pkg-config` so the Linux build can compile and
 link while native external repositories are added incrementally.
 
 The migrated leaf set is zlib, SQLite, pugixml, libpng, libjpeg-turbo, libxml2,
-WebP, libtiff, Little CMS, OpenJPEG, AVIF, HEIF, Imath, OpenEXR, ICU, and
-Lensfun.
+curl, WebP, libtiff, Little CMS, OpenJPEG, AVIF, HEIF, Imath, OpenEXR, ICU,
+and Lensfun.
 RawSpeed and LibRaw now depend on the root-owned JPEG/zlib aliases instead of
 using `-ljpeg`, `-lz`, and the aggregate pkg-config probe.
 
-Leaf dependencies still flowing through the transitional probe include libcurl,
-Exiv2, libgphoto2, JPEG XL, Wayland client symbols, GraphicsMagick, and similar
+Leaf dependencies still flowing through the transitional probe include Exiv2,
+libgphoto2, JPEG XL, Wayland client symbols, GraphicsMagick, and similar
 libraries. Wayland remains system-provided with GTK/GDK because the code uses it
 as part of the GTK desktop backend boundary rather than as an isolated leaf
 library.

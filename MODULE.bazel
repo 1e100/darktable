@@ -3,6 +3,7 @@ module(name = "darktable", version = "0.0.0")
 bazel_dep(name = "rules_cc", version = "0.2.18")
 bazel_dep(name = "rules_pkg", version = "1.1.0")
 bazel_dep(name = "rules_shell", version = "0.6.1")
+bazel_dep(name = "curl", version = "8.12.0.bcr.1")
 bazel_dep(name = "libjpeg_turbo", version = "3.1.3.bcr.4")
 bazel_dep(name = "libavif", version = "1.4.1")
 bazel_dep(name = "libheif", version = "1.21.2")
@@ -16,6 +17,13 @@ bazel_dep(name = "openexr", version = "3.4.10")
 bazel_dep(name = "pugixml", version = "1.15")
 bazel_dep(name = "sqlite3", version = "3.51.2.bcr.1")
 bazel_dep(name = "zlib", version = "1.3.2")
+
+single_version_override(
+    module_name = "curl",
+    patches = ["//third_party/curl:curl_no_config.patch"],
+    patch_strip = 0,
+    version = "8.12.0.bcr.1",
+)
 
 single_version_override(
     module_name = "libpng",
@@ -148,7 +156,6 @@ pkg_config_repository(
 pkg_config_repository(
     name = "darktable_linux_system_probe",
     packages = [
-        "libcurl >= 7.56",
         "exiv2 >= 0.27.2",
         "libgphoto2 >= 2.5",
         "libjxl >= 0.7.0",

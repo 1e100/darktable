@@ -118,8 +118,8 @@ can see host headers.
 
 The current leaf dependencies modeled under Bazel are:
 
-- BCR modules: zlib, SQLite, pugixml, libpng, libjpeg-turbo, libxml2, WebP,
-  libtiff, AVIF, HEIF, Imath, OpenEXR, and ICU.
+- BCR modules: zlib, SQLite, pugixml, curl, libpng, libjpeg-turbo, libxml2,
+  WebP, libtiff, AVIF, HEIF, Imath, OpenEXR, and ICU.
 - Pinned source archives: Little CMS, OpenJPEG, and Lensfun.
 - Existing vendored local repositories: whereami, libxcf, Lua, LuaAutoC,
   LibRaw, and RawSpeed.
@@ -127,6 +127,7 @@ The current leaf dependencies modeled under Bazel are:
 Root-owned aliases currently include:
 
 - `//third_party/avif:avif`
+- `//third_party/curl:curl`
 - `//third_party/heif:heif`
 - `//third_party/icu:icu`
 - `//third_party/imath:imath`
@@ -159,7 +160,6 @@ Keep these system-provided for now:
 
 Remaining transitional probe dependencies include:
 
-- libcurl
 - Exiv2
 - libgphoto2
 - JPEG XL
@@ -191,12 +191,14 @@ Optional desktop/system feature probes include:
 - Lensfun is pinned to upstream 0.3.4 with a local BUILD overlay. It uses GLib
   from the existing GTK/GLib system boundary and packages the XML database under
   `share/lensfun/version_1` in the Bazel runtime tree.
+- curl uses the BCR `curl` module through `//third_party/curl:curl`; TLS and
+  support libraries come from that module's Bzlmod dependency closure.
 
 ## Remaining Work
 
 - Continue evaluating manageable leaf dependencies for in-tree builds.
 - Defer broad or gnarly stacks: GTK/Cairo/Pango/Rsvg/GLib, libgphoto2,
-  Wayland/desktop integration, Exiv2, libcurl/TLS, GraphicsMagick, and JPEG XL.
+  Wayland/desktop integration, Exiv2, GraphicsMagick, and JPEG XL.
 - Expand `linux_full` feature coverage: map/OSMGpsMap, print/CUPS,
   colord/colord-gtk, libsecret, GMIC compressed LUTs, ImageMagick,
   AI/ONNXRuntime, cmstest, chart tools/tests, basecurve tools, and noise tools.
