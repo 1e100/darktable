@@ -127,13 +127,13 @@ The root `.bazelrc` enables Bzlmod and sets common C/C++ defaults:
 - C defaults to C99.
 - `HAVE_CONFIG_H`, `_XOPEN_SOURCE=700`, and PIC are applied globally.
 - The Linux configuration enables the feature macros needed by the current
-  milestone: OpenCL, LibRaw, Lua, GPhoto2, JPEG XL, WebP, AVIF,
-  HEIF, OpenEXR, OpenJPEG, ICU, and OpenMP.
+  milestone: OpenCL, LibRaw, Lua, GPhoto2, JPEG XL, WebP, AVIF, HEIF, OpenEXR,
+  OpenJPEG, ICU, OpenMP, map/OSMGpsMap, colord-gtk display profile
+  integration, libsecret password storage, G'MIC compressed LUT support, and
+  CUPS print support.
 
-The `linux_full` configuration extends `linux` with desktop integration
-features that are intentionally kept as system dependencies for now:
-map/OSMGpsMap, colord-gtk display profile integration, libsecret password
-storage, G'MIC compressed LUT support, and CUPS print support.
+The Linux desktop integrations are intentionally kept as system dependencies
+for now.
 
 On Debian/Ubuntu systems, install the development packages with:
 
@@ -485,8 +485,9 @@ The Bazel build is not a replacement for the full CMake build yet. Known gaps:
   installation target.
 - The generated `config.h` is a Linux milestone approximation rather than a
   complete configure system.
-- `linux_full` covers the map, print, colord-gtk, libsecret, and G'MIC feature
-  macros, but broader optional feature parity is still incomplete.
+- The Linux configuration covers the map, print, colord-gtk, libsecret, and
+  G'MIC feature macros, but broader optional feature parity is still
+  incomplete.
 - Several non-leaf or broader libraries still come from `pkg-config` and system
   packages.
 - Translated desktop/appstream metadata, manpages, documentation, and package

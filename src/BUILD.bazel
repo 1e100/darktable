@@ -6,11 +6,6 @@ load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 package(default_visibility = ["//visibility:public"])
 
-config_setting(
-    name = "linux_full",
-    define_values = {"darktable_linux_full": "true"},
-)
-
 darktable_generated_headers()
 
 COMMON_COPTS = [
@@ -355,36 +350,11 @@ cc_library(
     ] + PUBLIC_HEADER_DEPS,
 )
 
-LINUX_FULL_COLORD_RAW_DEPS = ["@darktable_linux_full_colord//:pkg"]
-LINUX_FULL_LIBSECRET_RAW_DEPS = ["@darktable_linux_full_libsecret//:pkg"]
-LINUX_FULL_MAP_RAW_DEPS = ["@darktable_linux_full_map//:pkg"]
-LINUX_FULL_PRINT_RAW_DEPS = ["@darktable_linux_full_cups//:pkg"]
-LINUX_FULL_GMIC_RAW_DEPS = ["@darktable_linux_full_gmic//:pkg"]
-
-LINUX_FULL_COLORD_DEPS = select({
-    ":linux_full": LINUX_FULL_COLORD_RAW_DEPS,
-    "//conditions:default": [],
-})
-
-LINUX_FULL_LIBSECRET_DEPS = select({
-    ":linux_full": LINUX_FULL_LIBSECRET_RAW_DEPS,
-    "//conditions:default": [],
-})
-
-LINUX_FULL_MAP_DEPS = select({
-    ":linux_full": LINUX_FULL_MAP_RAW_DEPS,
-    "//conditions:default": [],
-})
-
-LINUX_FULL_PRINT_DEPS = select({
-    ":linux_full": LINUX_FULL_PRINT_RAW_DEPS,
-    "//conditions:default": [],
-})
-
-LINUX_FULL_GMIC_DEPS = select({
-    ":linux_full": LINUX_FULL_GMIC_RAW_DEPS,
-    "//conditions:default": [],
-})
+LINUX_DESKTOP_COLORD_DEPS = ["@darktable_linux_desktop_colord//:pkg"]
+LINUX_DESKTOP_LIBSECRET_DEPS = ["@darktable_linux_desktop_libsecret//:pkg"]
+LINUX_DESKTOP_MAP_DEPS = ["@darktable_linux_desktop_map//:pkg"]
+LINUX_DESKTOP_PRINT_DEPS = ["@darktable_linux_desktop_cups//:pkg"]
+LINUX_DESKTOP_GMIC_DEPS = ["@darktable_linux_desktop_gmic//:pkg"]
 
 CORE_DEPS = [
     ":darktable_public_headers",
@@ -393,7 +363,7 @@ CORE_DEPS = [
     "@whereami//:whereami",
 ] + BAZEL_LEAF_DEPS + [
     "@gtk_stack//:pkg",
-] + LINUX_FULL_MAP_DEPS
+] + LINUX_DESKTOP_MAP_DEPS
 
 cc_library(
     name = "potrace_system",
@@ -418,19 +388,16 @@ dt_core_lib(
         "common/printing.c",
         "common/printprof.c",
         "common/profiling.c",
-    ], allow_empty = True) + select({
-        ":linux_full": [
-            "common/cups_print.c",
-            "common/printing.c",
-            "common/printprof.c",
-        ],
-        "//conditions:default": [],
-    }),
+    ], allow_empty = True) + [
+        "common/cups_print.c",
+        "common/printing.c",
+        "common/printprof.c",
+    ],
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
     deps = CORE_DEPS + [
         "@libraw_internal//:libraw",
-    ] + LINUX_FULL_COLORD_DEPS + LINUX_FULL_PRINT_DEPS,
+    ] + LINUX_DESKTOP_COLORD_DEPS + LINUX_DESKTOP_PRINT_DEPS,
 )
 
 dt_core_lib(
@@ -555,14 +522,12 @@ dt_core_lib(
     name = "darktable_pwstorage",
     srcs = [
         "common/pwstorage/backend_kwallet.c",
+        "common/pwstorage/backend_libsecret.c",
         "common/pwstorage/pwstorage.c",
-    ] + select({
-        ":linux_full": ["common/pwstorage/backend_libsecret.c"],
-        "//conditions:default": [],
-    }),
+    ],
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS + LINUX_FULL_LIBSECRET_DEPS,
+    deps = CORE_DEPS + LINUX_DESKTOP_LIBSECRET_DEPS,
 )
 
 cc_library(
@@ -747,7 +712,7 @@ IOP_PLUGINS = [
     ("hazeremoval", "iop/hazeremoval.c", []),
     ("filmic", "iop/filmic.c", []),
     ("mask_manager", "iop/mask_manager.c", []),
-    ("lut3d", "iop/lut3d.c", [], ["//third_party/png:png"], ["iop/lut3dgmic.cpp"], LINUX_FULL_GMIC_RAW_DEPS),
+    ("lut3d", "iop/lut3d.c", [], ["//third_party/png:png"], ["iop/lut3dgmic.cpp"], LINUX_DESKTOP_GMIC_DEPS),
     ("toneequal", "iop/toneequal.c", []),
     ("filmicrgb", "iop/filmicrgb.c", []),
     ("negadoctor", "iop/negadoctor.c", []),
@@ -788,17 +753,14 @@ dt_plugin_runtime_layout(
 VIEW_PLUGINS = [
     ("darkroom", ["views/darkroom.c"]),
     ("lighttable", ["views/lighttable.c"]),
+    ("map", ["views/map.c"], LINUX_DESKTOP_MAP_DEPS),
+    ("print", ["views/print.c"], LINUX_DESKTOP_PRINT_DEPS),
     ("slideshow", ["views/slideshow.c"]),
     ("tethering", ["views/tethering.c"]),
 ]
 
-LINUX_FULL_VIEW_PLUGINS = [
-    ("map", ["views/map.c"], LINUX_FULL_MAP_RAW_DEPS),
-    ("print", ["views/print.c"], LINUX_FULL_PRINT_RAW_DEPS),
-]
-
 dt_plugin_modules(
-    modules = VIEW_PLUGINS + LINUX_FULL_VIEW_PLUGINS,
+    modules = VIEW_PLUGINS,
     copts = COMMON_COPTS + [
         "-include",
         "views/view_api.h",
@@ -811,14 +773,12 @@ dt_plugin_modules(
 dt_plugin_group(
     name = "view_plugins",
     modules = [module[0] for module in VIEW_PLUGINS],
-    linux_full_modules = [module[0] for module in LINUX_FULL_VIEW_PLUGINS],
 )
 
 dt_plugin_runtime_layout(
     name = "view_plugin_runtime_layout",
     destdir = "views",
     modules = [module[0] for module in VIEW_PLUGINS],
-    linux_full_modules = [module[0] for module in LINUX_FULL_VIEW_PLUGINS],
 )
 
 LIGHTTABLE_PLUGINS = [
@@ -837,6 +797,11 @@ LIGHTTABLE_PLUGINS = [
     ("navigation", ["libs/navigation.c"]),
     ("histogram", ["libs/histogram.c", "libs/scopes/histogram.c", "libs/scopes/waveform.c", "libs/scopes/vectorscope.c", "libs/scopes/split.c"]),
     ("history", ["libs/history.c"]),
+    ("location", ["libs/location.c"], [
+        "//third_party/curl:curl",
+    ]),
+    ("map_settings", ["libs/map_settings.c"], LINUX_DESKTOP_MAP_DEPS),
+    ("map_locations", ["libs/map_locations.c"], LINUX_DESKTOP_MAP_DEPS),
     ("snapshots", ["libs/snapshots.c"]),
     ("modulegroups", ["libs/modulegroups.c"]),
     ("backgroundjobs", ["libs/backgroundjobs.c"]),
@@ -862,19 +827,11 @@ LIGHTTABLE_PLUGINS = [
     ("camera", ["libs/camera.c"]),
     ("live_view", ["libs/live_view.c"]),
     ("geotagging", ["libs/geotagging.c"]),
-]
-
-LINUX_FULL_LIGHTTABLE_PLUGINS = [
-    ("location", ["libs/location.c"], [
-        "//third_party/curl:curl",
-    ]),
-    ("map_settings", ["libs/map_settings.c"], LINUX_FULL_MAP_RAW_DEPS),
-    ("map_locations", ["libs/map_locations.c"], LINUX_FULL_MAP_RAW_DEPS),
-    ("print_settings", ["libs/print_settings.c"], LINUX_FULL_PRINT_RAW_DEPS),
+    ("print_settings", ["libs/print_settings.c"], LINUX_DESKTOP_PRINT_DEPS),
 ]
 
 dt_plugin_modules(
-    modules = LIGHTTABLE_PLUGINS + LINUX_FULL_LIGHTTABLE_PLUGINS,
+    modules = LIGHTTABLE_PLUGINS,
     copts = COMMON_COPTS + [
         "-include",
         "libs/lib_api.h",
@@ -887,14 +844,12 @@ dt_plugin_modules(
 dt_plugin_group(
     name = "lighttable_plugins",
     modules = [module[0] for module in LIGHTTABLE_PLUGINS],
-    linux_full_modules = [module[0] for module in LINUX_FULL_LIGHTTABLE_PLUGINS],
 )
 
 dt_plugin_runtime_layout(
     name = "lighttable_plugin_runtime_layout",
     destdir = "plugins/lighttable",
     modules = [module[0] for module in LIGHTTABLE_PLUGINS],
-    linux_full_modules = [module[0] for module in LINUX_FULL_LIGHTTABLE_PLUGINS],
 )
 
 IMAGEIO_FORMAT_PLUGINS = [
@@ -1017,11 +972,6 @@ RUNTIME_PLUGIN_ENTRIES = (
     [(":lib%s.so" % module[0], "lib/darktable/plugins/imageio/storage/lib%s.so" % module[0]) for module in IMAGEIO_STORAGE_PLUGINS]
 )
 
-LINUX_FULL_RUNTIME_PLUGIN_ENTRIES = (
-    [(":lib%s.so" % module[0], "lib/darktable/views/lib%s.so" % module[0]) for module in LINUX_FULL_VIEW_PLUGINS] +
-    [(":lib%s.so" % module[0], "lib/darktable/plugins/lighttable/lib%s.so" % module[0]) for module in LINUX_FULL_LIGHTTABLE_PLUGINS]
-)
-
 RUNTIME_GENERATED_DATA_ENTRIES = [
     (":darktableconfig.dtd", "share/darktable/darktableconfig.dtd"),
     (":darktableconfig.xml", "share/darktable/darktableconfig.xml"),
@@ -1111,7 +1061,6 @@ dt_runtime_tree(
     name = "bazel_runtime_tree",
     data = ["//data:runtime_data"],
     entries = RUNTIME_BINARY_ENTRIES + RUNTIME_PLUGIN_ENTRIES + RUNTIME_GENERATED_DATA_ENTRIES + RUNTIME_GPHOTO2_ENTRIES,
-    linux_full_entries = LINUX_FULL_RUNTIME_PLUGIN_ENTRIES,
 )
 
 genrule(

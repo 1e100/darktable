@@ -212,7 +212,7 @@ pkg_config_repository(
 )
 
 pkg_config_repository(
-    name = "darktable_linux_full_colord",
+    name = "darktable_linux_desktop_colord",
     packages = [
         "colord",
         "colord-gtk",
@@ -220,27 +220,27 @@ pkg_config_repository(
 )
 
 pkg_config_repository(
-    name = "darktable_linux_full_libsecret",
+    name = "darktable_linux_desktop_libsecret",
     packages = [
         "libsecret-1",
     ],
 )
 
 pkg_config_repository(
-    name = "darktable_linux_full_map",
+    name = "darktable_linux_desktop_map",
     packages = [
         "osmgpsmap-1.0",
     ],
 )
 
 system_library_repository(
-    name = "darktable_linux_full_cups",
+    name = "darktable_linux_desktop_cups",
     include_paths = ["/usr/include/cups"],
     linkopts = ["-lcups"],
 )
 
 system_library_repository(
-    name = "darktable_linux_full_gmic",
+    name = "darktable_linux_desktop_gmic",
     include_paths = ["/usr/include/gmic.h"],
     linkopts = ["-lgmic"],
 )

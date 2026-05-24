@@ -25,18 +25,15 @@ build:linux --copt=-DHAVE_LIBHEIF=1
 build:linux --copt=-DHAVE_OPENEXR
 build:linux --copt=-DHAVE_OPENJPEG
 build:linux --copt=-DHAVE_ICU
+build:linux --copt=-DHAVE_MAP
+build:linux --copt=-DHAVE_OSMGPSMAP_110_OR_NEWER
+build:linux --copt=-DHAVE_OSMGPSMAP_NEWER_THAN_110
+build:linux --copt=-DUSE_COLORDGTK
+build:linux --copt=-DHAVE_LIBSECRET
+build:linux --copt=-DHAVE_GMIC
+build:linux --copt=-DHAVE_PRINT
 build:linux --copt=-fopenmp
 build:linux --linkopt=-fopenmp
 build:linux --linkopt=-Wl,--enable-new-dtags
 build:linux --sandbox_add_mount_pair=/usr/include
 build:linux --sandbox_add_mount_pair=/usr/lib/x86_64-linux-gnu
-
-build:linux_full --config=linux
-build:linux_full --define=darktable_linux_full=true
-build:linux_full --copt=-DHAVE_MAP
-build:linux_full --copt=-DHAVE_OSMGPSMAP_110_OR_NEWER
-build:linux_full --copt=-DHAVE_OSMGPSMAP_NEWER_THAN_110
-build:linux_full --copt=-DUSE_COLORDGTK
-build:linux_full --copt=-DHAVE_LIBSECRET
-build:linux_full --copt=-DHAVE_GMIC
-build:linux_full --copt=-DHAVE_PRINT

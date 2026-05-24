@@ -66,23 +66,11 @@ runtime_tree = rule(
     },
 )
 
-def _linux_full_select(values):
-    if values:
-        return select({
-            "//src:linux_full": values,
-            "//conditions:default": [],
-        })
-    return []
-
-def dt_runtime_tree(name, entries, data = [], dirname = "darktable-runtime", linux_full_entries = []):
+def dt_runtime_tree(name, entries, data = [], dirname = "darktable-runtime"):
     runtime_tree(
         name = name,
-        srcs = [entry[0] for entry in entries] + _linux_full_select(
-            [entry[0] for entry in linux_full_entries],
-        ),
-        dests = [entry[1] for entry in entries] + _linux_full_select(
-            [entry[1] for entry in linux_full_entries],
-        ),
+        srcs = [entry[0] for entry in entries],
+        dests = [entry[1] for entry in entries],
         data = data,
         dirname = dirname,
     )

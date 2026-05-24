@@ -113,21 +113,13 @@ def _module_extra_deps(module, index):
         return module[index]
     return []
 
-def _linux_full_select(values):
-    if values:
-        return select({
-            "//src:linux_full": values,
-            "//conditions:default": [],
-        })
-    return []
-
 def dt_iop_modules(modules, deps, copts, includes, linkopts = []):
     for module in modules:
         dt_iop_module(
             name = module[0],
             src = module[1],
-            extra_srcs = module[2] + _linux_full_select(_module_extra_deps(module, 4)),
-            deps = deps + _module_extra_deps(module, 3) + _linux_full_select(_module_extra_deps(module, 5)),
+            extra_srcs = module[2] + _module_extra_deps(module, 4),
+            deps = deps + _module_extra_deps(module, 3) + _module_extra_deps(module, 5),
             copts = copts,
             includes = includes,
             linkopts = linkopts,
@@ -156,18 +148,16 @@ def dt_output_plugin_modules(modules, deps, copts, includes, linkopts = []):
             linkopts = linkopts,
         )
 
-def dt_plugin_group(name, modules, linux_full_modules = []):
+def dt_plugin_group(name, modules):
     native.filegroup(
         name = name,
-        srcs = [":lib%s.so" % module for module in modules] + _linux_full_select(
-            [":lib%s.so" % module for module in linux_full_modules],
-        ),
+        srcs = [":lib%s.so" % module for module in modules],
     )
 
-def dt_plugin_runtime_layout(name, modules, destdir, linux_full_modules = []):
+def dt_plugin_runtime_layout(name, modules, destdir):
     layout_targets = []
 
-    for module in modules + linux_full_modules:
+    for module in modules:
         copy_name = "%s_layout_%s" % (name, module)
         native.genrule(
             name = copy_name,
@@ -179,5 +169,5 @@ def dt_plugin_runtime_layout(name, modules, destdir, linux_full_modules = []):
 
     native.filegroup(
         name = name,
-        srcs = layout_targets[:len(modules)] + _linux_full_select(layout_targets[len(modules):]),
+        srcs = layout_targets,
     )
