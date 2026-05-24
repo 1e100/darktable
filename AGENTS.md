@@ -184,9 +184,9 @@ Optional desktop/system feature probes include:
   headers.
 - OpenEXR is patched so `OpenEXRCore` compiles with `_DEFAULT_SOURCE`; the
   repo-wide `_XOPEN_SOURCE=700` otherwise hides glibc endian macros.
-- ICU is wired as a narrow aggregate for `src/common/sqliteicu.c`. It currently
-  links ICU stub data; real ICU runtime data still needs to be modeled and
-  smoke-tested before claiming full ICU parity.
+- ICU is wired as a narrow aggregate for `src/common/sqliteicu.c`. The runtime
+  tree packages `icudt78l.dat`, and the Bazel launcher exports `ICU_DATA` so
+  SQLite ICU collation initialization can find the data file.
 
 ## Remaining Work
 
@@ -195,7 +195,6 @@ Optional desktop/system feature probes include:
   packaging in addition to the library.
 - Defer broad or gnarly stacks: GTK/Cairo/Pango/Rsvg/GLib, libgphoto2,
   Wayland/desktop integration, Exiv2, libcurl/TLS, GraphicsMagick, and JPEG XL.
-- Package or otherwise model ICU runtime data for the Bazel runtime tree.
 - Expand `linux_full` feature coverage: map/OSMGpsMap, print/CUPS,
   colord/colord-gtk, libsecret, GMIC compressed LUTs, ImageMagick,
   AI/ONNXRuntime, cmstest, chart tools/tests, basecurve tools, and noise tools.
@@ -226,5 +225,6 @@ For runtime-layout changes, also run:
 ```sh
 bazel build --config=linux //src:bazel_runtime_tree
 bazel test --config=linux //src:bazel_runtime_smoke_test
+bazel test --config=linux //src:bazel_sqliteicu_smoke_test
 bazel-bin/src/darktable-runtime/bin/darktable-bazel --version
 ```

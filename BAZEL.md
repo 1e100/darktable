@@ -72,7 +72,8 @@ This produces `bazel-bin/src/darktable-runtime`, with:
   locale path even before translation catalogs are modeled.
 
 The launcher in the runtime tree passes `--moduledir`, `--datadir`, and
-`--localedir`:
+`--localedir`. When packaged ICU data is present, it also exports `ICU_DATA` to
+`share/darktable/icu`:
 
 ```sh
 bazel-bin/src/darktable-runtime/bin/darktable-bazel --version
@@ -87,6 +88,16 @@ bazel test --config=linux //src:bazel_runtime_smoke_test
 This test validates representative runtime files, plugin directories, and early
 `--version` paths for the launcher and CLI-style binaries without requiring an
 X11 or Wayland session.
+
+SQLite ICU integration has a narrower smoke test:
+
+```sh
+bazel test --config=linux //src:bazel_sqliteicu_smoke_test
+```
+
+That test points `ICU_DATA` at the generated runtime tree, opens an in-memory
+SQLite database, registers `src/common/sqliteicu.c`, and verifies that
+`icu_load_collation` can create an ICU-backed collation.
 
 `//src:darktable-bazel` also emits `bazel-bin/src/darktable-bazel`, a small
 wrapper that forwards to the launcher inside the runtime tree.
@@ -194,8 +205,12 @@ otherwise hides glibc's endian conversion macros from `<endian.h>`.
 
 The `icu` BCR module does not expose pkg-config-like `icu-uc`, `icu-i18n`, and
 `icu-io` aliases. `//third_party/icu:icu` is a narrow aggregate over the ICU
-targets needed by `src/common/sqliteicu.c`. The current aggregate links ICU's
-stub data target; packaging real ICU data remains a runtime parity item.
+targets needed by `src/common/sqliteicu.c`. The darktable core targets compile
+that shim with `SQLITE_CORE` and `SQLITE_ENABLE_ICU`; those defines are kept out
+of the repo-wide Bazel flags so the external SQLite dependency is not rebuilt
+against mismatched ICU headers. The Bazel runtime tree packages `icudt78l.dat`
+from the ICU source release and the generated launcher exports `ICU_DATA` to
+that directory.
 
 Little CMS and OpenJPEG are currently pinned source archives rather than BCR
 modules:

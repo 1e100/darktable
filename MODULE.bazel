@@ -103,6 +103,18 @@ http_archive(
     urls = ["https://github.com/uclouvain/openjpeg/archive/refs/tags/v2.5.4.tar.gz"],
 )
 
+http_archive(
+    name = "darktable_icu_dat",
+    build_file_content = """filegroup(
+    name = "icu_dat",
+    srcs = ["source/data/in/icudt78l.dat"],
+    visibility = ["//visibility:public"],
+)""",
+    integrity = "sha256-Pploe1xDXUsgljDi0uu3mQbJhGheeGNQeLZy4DyJ3zU=",
+    strip_prefix = "icu",
+    urls = ["https://github.com/unicode-org/icu/releases/download/release-78.2/icu4c-78.2-sources.tgz"],
+)
+
 pkg_config_repository(
     name = "gtk_stack",
     packages = [

@@ -69,9 +69,12 @@ require_file "lib/darktable/plugins/imageio/storage/libdisk.so"
 
 require_dir "share/darktable"
 require_file "share/darktable/rawspeed/cameras.xml"
+require_file "share/darktable/icu/icudt78l.dat"
 require_file "share/darktable/darktablerc"
 require_file "share/darktable/darktableconfig.xml"
 require_dir "share/locale"
+
+export ICU_DATA="$runtime_root/share/darktable/icu"
 
 run_and_expect() {
   label="$1"

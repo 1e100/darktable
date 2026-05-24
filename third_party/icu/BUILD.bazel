@@ -2,6 +2,11 @@ package(default_visibility = ["//visibility:public"])
 
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
+filegroup(
+    name = "icu_data",
+    srcs = ["@darktable_icu_dat//:icu_dat"],
+)
+
 cc_library(
     name = "icu",
     deps = [

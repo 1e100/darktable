@@ -13,6 +13,8 @@ COMMON_COPTS = [
     "src/config.h",
     "-include",
     "common/module_api.h",
+    "-DSQLITE_CORE",
+    "-DSQLITE_ENABLE_ICU",
     "-Wno-error",
 ]
 
@@ -584,6 +586,23 @@ cc_binary(
     ],
 )
 
+cc_binary(
+    name = "bazel_sqliteicu_smoke",
+    srcs = [
+        "bazel_sqliteicu_smoke.c",
+        "common/sqliteicu.c",
+    ],
+    copts = [
+        "-DSQLITE_CORE",
+        "-DSQLITE_ENABLE_ICU",
+    ],
+    includes = ["."],
+    deps = [
+        "//third_party/icu:icu",
+        "//third_party/sqlite:sqlite",
+    ],
+)
+
 PLUGIN_DEPS = CORE_DEPS + [
     ":darktable_core_compile",
     ":darktable_plugin_headers",
@@ -907,6 +926,7 @@ RUNTIME_GENERATED_DATA_ENTRIES = [
     (":darktablerc", "share/darktable/darktablerc"),
     ("//data:org.darktable.darktable.desktop", "share/applications/org.darktable.darktable.desktop"),
     ("//data:org.darktable.darktable.appdata.xml", "share/metainfo/org.darktable.darktable.appdata.xml"),
+    ("//third_party/icu:icu_data", "share/darktable/icu/icudt78l.dat"),
     ("@rawspeed//:data/cameras.xml", "share/darktable/rawspeed/cameras.xml"),
     ("@rawspeed//:data/showcameras.xsl", "share/darktable/rawspeed/showcameras.xsl"),
     ("//tools:common.sh", "share/darktable/tools/common.sh"),
@@ -945,6 +965,19 @@ sh_test(
     srcs = ["//bazel:runtime_smoke_test.sh"],
     args = ["$(rootpath :bazel_runtime_tree)"],
     data = [":bazel_runtime_tree"],
+)
+
+sh_test(
+    name = "bazel_sqliteicu_smoke_test",
+    srcs = ["//bazel:sqliteicu_smoke_test.sh"],
+    args = [
+        "$(rootpath :bazel_sqliteicu_smoke)",
+        "$(rootpath :bazel_runtime_tree)",
+    ],
+    data = [
+        ":bazel_runtime_tree",
+        ":bazel_sqliteicu_smoke",
+    ],
 )
 
 filegroup(
