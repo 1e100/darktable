@@ -108,28 +108,35 @@ def dt_iop_module(
         linkopts = linkopts,
     )
 
-def dt_iop_modules(modules, deps, copts, includes):
+def _module_extra_deps(module, index):
+    if len(module) > index:
+        return module[index]
+    return []
+
+def dt_iop_modules(modules, deps, copts, includes, linkopts = []):
     for module in modules:
         dt_iop_module(
             name = module[0],
             src = module[1],
             extra_srcs = module[2],
-            deps = deps,
+            deps = deps + _module_extra_deps(module, 3),
             copts = copts,
             includes = includes,
+            linkopts = linkopts,
         )
 
-def dt_plugin_modules(modules, deps, copts, includes):
+def dt_plugin_modules(modules, deps, copts, includes, linkopts = []):
     for module in modules:
         dt_plugin_module(
             name = module[0],
             srcs = module[1],
-            deps = deps,
+            deps = deps + _module_extra_deps(module, 2),
             copts = copts,
             includes = includes,
+            linkopts = linkopts,
         )
 
-def dt_output_plugin_modules(modules, deps, copts, includes):
+def dt_output_plugin_modules(modules, deps, copts, includes, linkopts = []):
     for module in modules:
         dt_plugin_module(
             name = module[0],
@@ -138,6 +145,7 @@ def dt_output_plugin_modules(modules, deps, copts, includes):
             deps = deps + module[3],
             copts = copts,
             includes = includes,
+            linkopts = linkopts,
         )
 
 def dt_plugin_group(name, modules):

@@ -118,10 +118,10 @@ can see host headers.
 
 The current leaf dependencies modeled under Bazel are:
 
-- BCR modules: zlib, SQLite, pugixml, Brotli, curl, Highway, libpng,
+- BCR modules: zlib, SQLite, pugixml, Brotli, curl, Highway, libexpat, libpng,
   libjpeg-turbo, libxml2, WebP, libtiff, AVIF, HEIF, Imath, OpenEXR, skcms,
   and ICU.
-- Pinned source archives: Little CMS, OpenJPEG, Lensfun, and libjxl.
+- Pinned source archives: Little CMS, OpenJPEG, Lensfun, Exiv2, and libjxl.
 - Existing vendored local repositories: whereami, libxcf, Lua, LuaAutoC,
   LibRaw, and RawSpeed.
 
@@ -129,6 +129,7 @@ Root-owned aliases currently include:
 
 - `//third_party/avif:avif`
 - `//third_party/curl:curl`
+- `//third_party/exiv2:exiv2`
 - `//third_party/heif:heif`
 - `//third_party/icu:icu`
 - `//third_party/imath:imath`
@@ -162,7 +163,6 @@ Keep these system-provided for now:
 
 Remaining transitional probe dependencies include:
 
-- Exiv2
 - libgphoto2
 - GraphicsMagick
 
@@ -197,6 +197,10 @@ Optional desktop/system feature probes include:
 - libjxl is pinned to upstream 0.11.2 through a Bzlmod `archive_override`.
   `//third_party/jxl:jxl` aggregates `jpegxl` and `jpegxl_threads`; Brotli,
   Highway, and skcms come from BCR.
+- Exiv2 is pinned to upstream 0.28.8 with a local BUILD overlay. The overlay
+  builds Exiv2 plus the bundled Adobe XMP SDK, uses BCR `libexpat`, and enables
+  PNG/BMFF/Brotli/XMP/filesystem/video support while leaving NLS, webready HTTP
+  IO, and inih config parsing disabled.
 - Brotli is patched so its strict C flags do not reject anonymous unions under
   darktable's repo-wide C99 default.
 - Highway is patched so BCR Highway headers are exported for libjxl's
@@ -206,7 +210,12 @@ Optional desktop/system feature probes include:
 
 - Continue evaluating manageable leaf dependencies for in-tree builds.
 - Defer broad or gnarly stacks: GTK/Cairo/Pango/Rsvg/GLib, libgphoto2,
-  Wayland/desktop integration, Exiv2, and GraphicsMagick.
+  Wayland/desktop integration, and GraphicsMagick.
+- Finish plugin link-graph cleanup. Plugin deps are split by plugin family and
+  by direct codec/header usage, but plugins still depend on
+  `darktable_core_compile`; replacing that edge with a correct shared
+  `libdarktable.so` API link requires making that shared library export the
+  symbols used by the binaries and modules.
 - Expand `linux_full` feature coverage: map/OSMGpsMap, print/CUPS,
   colord/colord-gtk, libsecret, GMIC compressed LUTs, ImageMagick,
   AI/ONNXRuntime, cmstest, chart tools/tests, basecurve tools, and noise tools.

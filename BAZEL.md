@@ -138,7 +138,7 @@ refer to host system headers and libraries.
 - `rules_pkg` for future packaging work.
 - `rules_shell` for shell smoke tests.
 - Bazel Central Registry modules for migrated leaf libraries: `zlib`,
-  `sqlite3`, `pugixml`, `brotli`, `curl`, `highway`, `libpng`,
+  `sqlite3`, `pugixml`, `brotli`, `curl`, `highway`, `libexpat`, `libpng`,
   `libjpeg_turbo`, `libxml2`, `libwebp`, `libtiff`, `libavif`, `libheif`,
   `imath`, `openexr`, `skcms`, and `icu`.
 - `http_archive`, declared through Bzlmod `use_repo_rule`, for pinned upstream
@@ -170,6 +170,7 @@ The current aliases are:
 
 - `//third_party/avif:avif`
 - `//third_party/curl:curl`
+- `//third_party/exiv2:exiv2`
 - `//third_party/heif:heif`
 - `//third_party/icu:icu`
 - `//third_party/imath:imath`
@@ -241,6 +242,15 @@ patched to publish its repository root as an include path so libjxl's
 angle-bracket `<hwy/...>` includes resolve to the BCR Highway headers rather
 than host headers under `/usr/include`.
 
+Exiv2 is pinned to upstream 0.28.8 from the GitHub release archive with a
+native `third_party/exiv2/exiv2.BUILD` overlay. The overlay builds the Exiv2
+library and the bundled Adobe XMP SDK from source, uses BCR `libexpat` for XMP
+parsing, and keeps PNG/BMFF/Brotli/XMP/filesystem/video support enabled. A small
+patch materializes the CMake-generated `exv_conf.h` and `exiv2lib_export.h`
+headers for the selected feature set. NLS, webready/curl-backed HTTP IO, and
+inih-based Exiv2 user config parsing are intentionally disabled in the Bazel
+overlay.
+
 Little CMS and OpenJPEG are currently pinned source archives rather than BCR
 modules:
 
@@ -270,16 +280,26 @@ explicit GTK-system boundary. `@darktable_linux_system_probe` aggregates
 unmigrated dependencies through `pkg-config` so the Linux build can compile and
 link while native external repositories are added incrementally.
 
-The migrated leaf set is zlib, SQLite, pugixml, curl, JPEG XL, libpng,
+The migrated leaf set is zlib, SQLite, pugixml, curl, Exiv2, JPEG XL, libpng,
 libjpeg-turbo, libxml2, WebP, libtiff, Little CMS, OpenJPEG, AVIF, HEIF, Imath,
 OpenEXR, ICU, and Lensfun.
 RawSpeed and LibRaw now depend on the root-owned JPEG/zlib aliases instead of
 using `-ljpeg`, `-lz`, and the aggregate pkg-config probe.
 
-Leaf dependencies still flowing through the transitional probe include Exiv2,
+Leaf dependencies still flowing through the transitional probe include
 libgphoto2, Wayland client symbols, GraphicsMagick, and similar libraries.
 Wayland remains system-provided with GTK/GDK because the code uses it as part of
 the GTK desktop backend boundary rather than as an isolated leaf library.
+
+Plugin dependencies are now expressed in smaller buckets. `PLUGIN_DEPS` contains
+the common plugin API and GTK/Lua/system boundary dependencies, while individual
+imageio, storage, lighttable, and iop plugin entries add the leaf libraries they
+include directly, such as JPEG, PNG, TIFF, JPEG XL, HEIF, WebP, OpenEXR,
+OpenJPEG, AVIF, Lensfun, libxml2, and curl. This improves BUILD-file ownership
+and makes future pruning easier. It is not yet a complete link-graph
+deduplication because plugin `.so` targets still depend on
+`darktable_core_compile`; replacing that with a usable `libdarktable.so` API
+link remains a separate milestone.
 
 ## pkg-config Rule
 

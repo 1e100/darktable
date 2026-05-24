@@ -285,6 +285,7 @@ GENERATED_HDRS = [
 BAZEL_LEAF_DEPS = [
     "//third_party/avif:avif",
     "//third_party/curl:curl",
+    "//third_party/exiv2:exiv2",
     "//third_party/heif:heif",
     "//third_party/icu:icu",
     "//third_party/imath:imath",
@@ -304,15 +305,24 @@ BAZEL_LEAF_DEPS = [
     "//third_party/zlib:zlib",
 ]
 
+PUBLIC_HEADER_DEPS = [
+    "//third_party/curl:curl",
+    "//third_party/jpeg:jpeg",
+    "//third_party/lcms2:lcms2",
+    "//third_party/png:png",
+    "//third_party/sqlite:sqlite",
+    "@darktable_linux_system_probe//:pkg",
+    "@gtk_stack//:pkg",
+    "@lautoc//:lautoc",
+    "@lua_internal//:lua",
+]
+
 cc_library(
     name = "darktable_public_headers",
     hdrs = CORE_HDRS + GENERATED_HDRS,
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES + ["."],
-    deps = BAZEL_LEAF_DEPS + [
-        "@darktable_linux_system_probe//:pkg",
-        "@gtk_stack//:pkg",
-    ],
+    deps = PUBLIC_HEADER_DEPS,
 )
 
 cc_library(
@@ -335,11 +345,9 @@ cc_library(
     ], allow_empty = True),
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES + ["."],
-    deps = BAZEL_LEAF_DEPS + [
+    deps = [
         ":darktable_public_headers",
-        "@darktable_linux_system_probe//:pkg",
-        "@gtk_stack//:pkg",
-    ],
+    ] + PUBLIC_HEADER_DEPS,
 )
 
 CORE_DEPS = [
@@ -606,10 +614,16 @@ cc_binary(
     ],
 )
 
-PLUGIN_DEPS = CORE_DEPS + [
+PLUGIN_DEPS = [
     ":darktable_core_compile",
     ":darktable_plugin_headers",
+    "//third_party/lcms2:lcms2",
+    "//third_party/sqlite:sqlite",
     ":potrace_system",
+    "@darktable_linux_system_probe//:pkg",
+    "@gtk_stack//:pkg",
+    "@lautoc//:lautoc",
+    "@lua_internal//:lua",
 ]
 
 IOP_PLUGINS = [
@@ -689,7 +703,7 @@ IOP_PLUGINS = [
     ("hazeremoval", "iop/hazeremoval.c", []),
     ("filmic", "iop/filmic.c", []),
     ("mask_manager", "iop/mask_manager.c", []),
-    ("lut3d", "iop/lut3d.c", []),
+    ("lut3d", "iop/lut3d.c", [], ["//third_party/png:png"]),
     ("toneequal", "iop/toneequal.c", []),
     ("filmicrgb", "iop/filmicrgb.c", []),
     ("negadoctor", "iop/negadoctor.c", []),
@@ -705,7 +719,7 @@ IOP_PLUGINS = [
     ("colorequal", "iop/colorequal.c", []),
     ("rasterfile", "iop/rasterfile.c", []),
     ("watermark", "iop/watermark.c", []),
-    ("lens", "iop/lens.cc", []),
+    ("lens", "iop/lens.cc", [], ["//third_party/lensfun:lensfun"]),
 ]
 
 dt_iop_modules(
@@ -713,6 +727,7 @@ dt_iop_modules(
     copts = COMMON_COPTS,
     includes = PLUGIN_INCLUDES,
     deps = PLUGIN_DEPS,
+    linkopts = ["-Wl,-rpath,$$ORIGIN/.."],
 )
 
 dt_plugin_group(
@@ -741,6 +756,7 @@ dt_plugin_modules(
     ],
     includes = PLUGIN_INCLUDES,
     deps = PLUGIN_DEPS,
+    linkopts = ["-Wl,-rpath,$$ORIGIN/.."],
 )
 
 dt_plugin_group(
@@ -758,7 +774,7 @@ LIGHTTABLE_PLUGINS = [
     ("import", ["libs/import.c"]),
     ("export", ["libs/export.c", "libs/export_metadata.c"]),
     ("copy_history", ["libs/copy_history.c"]),
-    ("styles", ["libs/styles.c"]),
+    ("styles", ["libs/styles.c"], ["//third_party/xml:xml"]),
     ("tagging", ["libs/tagging.c"]),
     ("image", ["libs/image.c"]),
     ("select", ["libs/select.c"]),
@@ -805,6 +821,7 @@ dt_plugin_modules(
     ],
     includes = PLUGIN_INCLUDES,
     deps = PLUGIN_DEPS,
+    linkopts = ["-Wl,-rpath,$$ORIGIN/../.."],
 )
 
 dt_plugin_group(
@@ -820,18 +837,31 @@ dt_plugin_runtime_layout(
 
 IMAGEIO_FORMAT_PLUGINS = [
     ("copy_format", "copy", ["imageio/format/copy.c"], []),
-    ("jpeg_format", "jpeg", ["imageio/format/jpeg.c"], []),
+    ("jpeg_format", "jpeg", ["imageio/format/jpeg.c"], ["//third_party/jpeg:jpeg"]),
     ("pdf_format", "pdf", ["imageio/format/pdf.c"], []),
-    ("png_format", "png", ["imageio/format/png.c"], []),
+    ("png_format", "png", ["imageio/format/png.c"], [
+        "//third_party/exiv2:exiv2",
+        "//third_party/png:png",
+        "//third_party/zlib:zlib",
+    ]),
     ("ppm_format", "ppm", ["imageio/format/ppm.c"], []),
     ("pfm_format", "pfm", ["imageio/format/pfm.c"], []),
-    ("tiff_format", "tiff", ["imageio/format/tiff.c"], []),
-    ("jxl_format", "jpegxl", ["imageio/format/jxl.c"], []),
-    ("heif_format", "heif", ["imageio/format/heif.c"], []),
-    ("webp_format", "webp", ["imageio/format/webp.c"], []),
-    ("exr_format", "exr", ["imageio/format/exr.cc"], []),
-    ("j2k_format", "j2k", ["imageio/format/j2k.c"], []),
-    ("avif_format", "avif", ["imageio/format/avif.c"], []),
+    ("tiff_format", "tiff", ["imageio/format/tiff.c"], [
+        "//third_party/imath:imath",
+        "//third_party/tiff:tiff",
+    ]),
+    ("jxl_format", "jpegxl", ["imageio/format/jxl.c"], ["//third_party/jxl:jxl"]),
+    ("heif_format", "heif", ["imageio/format/heif.c"], ["//third_party/heif:heif"]),
+    ("webp_format", "webp", ["imageio/format/webp.c"], [
+        "//third_party/webp:webp",
+        "//third_party/webp:webpmux",
+    ]),
+    ("exr_format", "exr", ["imageio/format/exr.cc"], [
+        "//third_party/imath:imath",
+        "//third_party/openexr:openexr",
+    ]),
+    ("j2k_format", "j2k", ["imageio/format/j2k.c"], ["//third_party/openjpeg:openjpeg"]),
+    ("avif_format", "avif", ["imageio/format/avif.c"], ["//third_party/avif:avif"]),
     ("xcf_format", "xcf", ["imageio/format/xcf.c"], ["@libxcf//:xcf"]),
 ]
 
@@ -843,6 +873,7 @@ dt_output_plugin_modules(
     ],
     includes = PLUGIN_INCLUDES,
     deps = PLUGIN_DEPS,
+    linkopts = ["-Wl,-rpath,$$ORIGIN/../../.."],
 )
 
 dt_plugin_group(
@@ -861,7 +892,7 @@ IMAGEIO_STORAGE_PLUGINS = [
     ("email", ["imageio/storage/email.c"]),
     ("gallery", ["imageio/storage/gallery.c"]),
     ("latex", ["imageio/storage/latex.c"]),
-    ("piwigo", ["imageio/storage/piwigo.c"]),
+    ("piwigo", ["imageio/storage/piwigo.c"], ["//third_party/curl:curl"]),
 ]
 
 dt_plugin_modules(
@@ -872,6 +903,7 @@ dt_plugin_modules(
     ],
     includes = PLUGIN_INCLUDES,
     deps = PLUGIN_DEPS,
+    linkopts = ["-Wl,-rpath,$$ORIGIN/../../.."],
 )
 
 dt_plugin_group(

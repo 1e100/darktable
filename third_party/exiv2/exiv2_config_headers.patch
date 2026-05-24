@@ -1,0 +1,55 @@
+diff --git a/include/exiv2/exiv2lib_export.h b/include/exiv2/exiv2lib_export.h
+new file mode 100644
+--- /dev/null
++++ b/include/exiv2/exiv2lib_export.h
+@@ -0,0 +1,8 @@
++#ifndef EXIV2LIB_EXPORT_H
++#define EXIV2LIB_EXPORT_H
++
++#define EXIV2API
++#define EXIV2LIB_NO_EXPORT
++#define EXIV2LIB_DEPRECATED
++
++#endif
+diff --git a/include/exiv2/exv_conf.h b/include/exiv2/exv_conf.h
+new file mode 100644
+--- /dev/null
++++ b/include/exiv2/exv_conf.h
+@@ -0,0 +1,37 @@
++#ifndef _EXV_CONF_H_
++#define _EXV_CONF_H_
++
++#define EXV_ENABLE_FILESYSTEM 1
++#define EXV_ENABLE_VIDEO 1
++#define EXV_ENABLE_BMFF 1
++#define EXV_HAVE_LIBZ 1
++#define EXV_HAVE_BROTLI 1
++#define EXV_HAVE_XMP_TOOLKIT 1
++#define EXV_HAVE_LENSDATA 1
++#define EXV_HAVE_ICONV 1
++
++#define EXV_PACKAGE_NAME "exiv2"
++#define EXV_PACKAGE_STRING "exiv2 0.28.8"
++#define EXV_PACKAGE_VERSION "0.28.8"
++
++#define EXIV2_MAJOR_VERSION (0U)
++#define EXIV2_MINOR_VERSION (28U)
++#define EXIV2_PATCH_VERSION (8U)
++#define EXIV2_TWEAK_VERSION (0U)
++
++#if defined(__NetBSD__)
++#include <sys/param.h>
++#if __NetBSD_Prereq__(9,99,17)
++#define NETBSD_POSIX_ICONV 1
++#else
++#define NETBSD_POSIX_ICONV 0
++#endif
++#endif
++
++#if defined(ICONV_ACCEPTS_CONST_INPUT) || (defined(__NetBSD__) && !NETBSD_POSIX_ICONV)
++#define EXV_ICONV_CONST const
++#else
++#define EXV_ICONV_CONST
++#endif
++
++#endif

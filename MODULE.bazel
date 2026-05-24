@@ -11,6 +11,7 @@ bazel_dep(name = "libjpeg_turbo", version = "3.1.3.bcr.4")
 bazel_dep(name = "libavif", version = "1.4.1")
 bazel_dep(name = "libheif", version = "1.21.2")
 bazel_dep(name = "libjxl", version = "0.11.2")
+bazel_dep(name = "libexpat", version = "2.7.1.bcr.1")
 bazel_dep(name = "libpng", version = "1.6.54")
 bazel_dep(name = "libtiff", version = "4.7.1")
 bazel_dep(name = "libwebp", version = "1.6.0")
@@ -125,6 +126,16 @@ new_local_repository(
 )
 
 http_archive(
+    name = "exiv2",
+    build_file = "//third_party/exiv2:exiv2.BUILD",
+    patch_args = ["-p1"],
+    patches = ["//third_party/exiv2:exiv2_config_headers.patch"],
+    sha256 = "ea51b0609f58a9afa063b60daa1539948b62247721e154f4fff0ad3aec9f9756",
+    strip_prefix = "exiv2-0.28.8",
+    urls = ["https://github.com/Exiv2/exiv2/archive/refs/tags/v0.28.8.tar.gz"],
+)
+
+http_archive(
     name = "lcms2",
     build_file = "//third_party/lcms2:lcms2.BUILD",
     sha256 = "49e7e134e4299733dd0eda434fa468997a28ab3d33fa397c642b03644f552216",
@@ -187,7 +198,6 @@ pkg_config_repository(
 pkg_config_repository(
     name = "darktable_linux_system_probe",
     packages = [
-        "exiv2 >= 0.27.2",
         "libgphoto2 >= 2.5",
         "wayland-client",
         "GraphicsMagick",

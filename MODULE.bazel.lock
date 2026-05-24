@@ -92,6 +92,8 @@
     "https://bcr.bazel.build/modules/libde265/1.0.18/source.json": "c6af4a2a7a183051a5591edddcc9964b65609be5ddab3474cbdc1b8005601d99",
     "https://bcr.bazel.build/modules/libdeflate/1.25/MODULE.bazel": "0ea179178f6ba27d1067c1a9e2adec816909626d4305464c49b7c6a640deaab7",
     "https://bcr.bazel.build/modules/libdeflate/1.25/source.json": "baf7b8e3b92a3a527d00dc9bec5d05b01e109fafe332e8200630fd61259df17b",
+    "https://bcr.bazel.build/modules/libexpat/2.7.1.bcr.1/MODULE.bazel": "ad0933e7da133de74cc535911cab2f1b2f224b340898656748d2c1f48d031e70",
+    "https://bcr.bazel.build/modules/libexpat/2.7.1.bcr.1/source.json": "8e120a44b11853250a501634148058edad44c4a6fabb1c494cbf9ebc2cc3d6dd",
     "https://bcr.bazel.build/modules/libheif/1.21.2/MODULE.bazel": "45203e453aee5d72e287e252245a3f2e29321b4b2a44de0e17ce25fd8f9c732e",
     "https://bcr.bazel.build/modules/libheif/1.21.2/source.json": "b70a51f14ce0e98773d8eb54e2dc3df11c7bbcf13c79d3f7d8e7f65c155f6f17",
     "https://bcr.bazel.build/modules/libjpeg_turbo/2.1.91/MODULE.bazel": "bcc23b7c4866af2d7777ee49db435603ca1e35b90ea0689f8051900fa8c73c6b",
