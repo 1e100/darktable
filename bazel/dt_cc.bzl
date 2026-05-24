@@ -31,7 +31,7 @@ def dt_filegroup_modules(name, modules):
         srcs = [":lib%s.so" % module for module in modules],
     )
 
-def dt_core_lib(name, srcs, copts, includes, deps, textual_hdrs = []):
+def dt_core_lib(name, srcs, copts, includes, deps, textual_hdrs = [], target_compatible_with = []):
     cc_library(
         name = name,
         srcs = srcs,
@@ -40,6 +40,7 @@ def dt_core_lib(name, srcs, copts, includes, deps, textual_hdrs = []):
         includes = includes,
         alwayslink = True,
         deps = deps,
+        target_compatible_with = target_compatible_with,
     )
 
 def dt_plugin_module(
@@ -51,7 +52,8 @@ def dt_plugin_module(
         link_deps = [],
         output_name = None,
         linkopts = [],
-        textual_hdrs = []):
+        textual_hdrs = [],
+        target_compatible_with = []):
     cc_library(
         name = "%s_plugin_objects" % name,
         srcs = srcs,
@@ -60,6 +62,7 @@ def dt_plugin_module(
         includes = includes,
         alwayslink = True,
         deps = deps,
+        target_compatible_with = target_compatible_with,
     )
 
     cc_binary(
@@ -76,6 +79,7 @@ def dt_plugin_module(
         linkstatic = True,
         features = ["-fully_static_link"],
         stamp = 0,
+        target_compatible_with = target_compatible_with,
     )
 
 def dt_iop_module(
@@ -172,7 +176,7 @@ def dt_plugin_group(name, modules):
         srcs = [":lib%s.so" % module for module in modules],
     )
 
-def dt_plugin_runtime_layout(name, modules, destdir):
+def dt_plugin_runtime_layout(name, modules, destdir, target_compatible_with = []):
     layout_targets = []
 
     for module in modules:
@@ -182,10 +186,12 @@ def dt_plugin_runtime_layout(name, modules, destdir):
             srcs = [":lib%s.so" % module],
             outs = ["bazel-runtime/lib/darktable/%s/lib%s.so" % (destdir, module)],
             cmd = "cp $(location :lib%s.so) $@" % module,
+            target_compatible_with = target_compatible_with,
         )
         layout_targets.append(":" + copy_name)
 
     native.filegroup(
         name = name,
         srcs = layout_targets,
+        target_compatible_with = target_compatible_with,
     )

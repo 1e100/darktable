@@ -1,0 +1,52 @@
+package(default_visibility = ["//visibility:public"])
+
+MANPAGES = [
+    "darktable",
+    "darktable-cli",
+    "darktable-generate-cache",
+    "darktable-cltest",
+    "darktable-cmstest",
+]
+
+TRANSLATED_LANGUAGES = [
+    "de",
+    "fr",
+    "es",
+]
+
+[
+    genrule(
+        name = page + "_manpage",
+        srcs = [
+            page + ".pod",
+            "//:AUTHORS",
+            "//tools:makeman.sh",
+        ],
+        outs = [page + ".1"],
+        cmd = "sh $(location //tools:makeman.sh) $(location %s.pod) $(location //:AUTHORS) $@" % page,
+    )
+    for page in MANPAGES
+]
+
+[
+    genrule(
+        name = "%s_%s.1" % (lang, page),
+        srcs = [
+            page + ".pod",
+            "po/%s.po" % lang,
+            "//:AUTHORS",
+            "//tools:makeman.sh",
+        ],
+        outs = ["%s/%s.1" % (lang, page)],
+        cmd = "\n".join([
+            "set -eu",
+            "command -v po4a-translate >/dev/null || { echo 'po4a-translate is required for translated manpages; install po4a.' >&2; exit 1; }",
+            "mkdir -p $(@D)",
+            "tmp=\"$(@D)/%s.pod\"" % page,
+            "po4a-translate -f pod -m $(location %s.pod) -p $(location po/%s.po) -l \"$$tmp\" -k 0" % (page, lang),
+            "sh $(location //tools:makeman.sh) \"$$tmp\" $(location //:AUTHORS) $@",
+        ]),
+    )
+    for lang in TRANSLATED_LANGUAGES
+    for page in MANPAGES
+]

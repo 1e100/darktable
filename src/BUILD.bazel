@@ -10,6 +10,11 @@ darktable_generated_headers()
 
 AI_ENABLED = "//bazel/config:ai_enabled"
 
+AI_TARGET_COMPATIBLE = select({
+    AI_ENABLED: [],
+    "//conditions:default": ["@platforms//:incompatible"],
+})
+
 COMMON_COPTS = [
     "-D_GNU_SOURCE",
     "-include",
@@ -532,10 +537,42 @@ dt_core_lib(
 )
 
 dt_core_lib(
-    name = "darktable_imageio_core",
-    srcs = glob(["imageio/*.c", "imageio/*.cc"], exclude = [
-        "imageio/imageio_im.c",
-    ], allow_empty = True),
+    name = "darktable_imageio_registry",
+    srcs = [
+        "imageio/imageio.c",
+        "imageio/imageio_module.c",
+    ],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    deps = (
+        CORE_BASE_DEPS +
+        CORE_METADATA_DEPS +
+        CORE_IMAGEIO_DEPS +
+        CORE_COMPRESSION_DEPS +
+        [
+            ":darktable_imageio_loaders",
+            ":darktable_imageio_raw_loaders",
+        ]
+    ),
+)
+
+dt_core_lib(
+    name = "darktable_imageio_loaders",
+    srcs = [
+        "imageio/imageio_avif.c",
+        "imageio/imageio_exr.cc",
+        "imageio/imageio_heif.c",
+        "imageio/imageio_j2k.c",
+        "imageio/imageio_jpeg.c",
+        "imageio/imageio_jpegxl.c",
+        "imageio/imageio_pfm.c",
+        "imageio/imageio_png.c",
+        "imageio/imageio_pnm.c",
+        "imageio/imageio_qoi.c",
+        "imageio/imageio_rgbe.c",
+        "imageio/imageio_tiff.c",
+        "imageio/imageio_webp.c",
+    ],
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
     deps = (
@@ -545,6 +582,49 @@ dt_core_lib(
         CORE_COMPRESSION_DEPS +
         CORE_RAW_DEPS
     ),
+)
+
+dt_core_lib(
+    name = "darktable_imageio_dng",
+    srcs = ["imageio/imageio_dng.c"],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    deps = (
+        CORE_BASE_DEPS +
+        CORE_METADATA_DEPS +
+        CORE_IMAGEIO_DEPS +
+        CORE_COMPRESSION_DEPS
+    ),
+)
+
+dt_core_lib(
+    name = "darktable_imageio_raw_loaders",
+    srcs = [
+        "imageio/imageio_libraw.c",
+        "imageio/imageio_rawspeed.cc",
+    ],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    deps = (
+        CORE_BASE_DEPS +
+        CORE_METADATA_DEPS +
+        CORE_IMAGEIO_DEPS +
+        CORE_COMPRESSION_DEPS +
+        CORE_RAW_DEPS
+    ),
+)
+
+dt_core_lib(
+    name = "darktable_imageio_core",
+    srcs = [],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    deps = [
+        ":darktable_imageio_dng",
+        ":darktable_imageio_loaders",
+        ":darktable_imageio_raw_loaders",
+        ":darktable_imageio_registry",
+    ],
 )
 
 dt_core_lib(
@@ -559,37 +639,27 @@ dt_core_lib(
 )
 
 dt_core_lib(
-    name = "darktable_lua",
+    name = "darktable_lua_runtime",
     srcs = [
-        "lua/ai.c",
-        "lua/cairo.c",
         "lua/call.c",
-        "lua/configuration.c",
-        "lua/database.c",
         "lua/events.c",
-        "lua/film.c",
-        "lua/format.c",
         "lua/gettext.c",
         "lua/glist.c",
-        "lua/gui.c",
-        "lua/guides.c",
-        "lua/image.c",
         "lua/init.c",
-        "lua/lib.c",
         "lua/lua.c",
         "lua/lualib.c",
-        "lua/luastorage.c",
-        "lua/metadata.c",
         "lua/modules.c",
-        "lua/password.c",
-        "lua/preferences.c",
-        "lua/print.c",
-        "lua/storage.c",
-        "lua/styles.c",
-        "lua/tags.c",
         "lua/types.c",
         "lua/util.c",
-        "lua/view.c",
+    ],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    deps = CORE_BASE_DEPS + CORE_IMAGEIO_DEPS + CORE_NETWORK_DEPS,
+)
+
+dt_core_lib(
+    name = "darktable_lua_widgets",
+    srcs = [
         "lua/widget/box.c",
         "lua/widget/button.c",
         "lua/widget/check_button.c",
@@ -607,7 +677,66 @@ dt_core_lib(
     ],
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_BASE_DEPS + CORE_IMAGEIO_DEPS + CORE_NETWORK_DEPS + CORE_AI_DEPS,
+    deps = CORE_BASE_DEPS + [
+        ":darktable_lua_runtime",
+    ],
+)
+
+dt_core_lib(
+    name = "darktable_lua_bindings",
+    srcs = [
+        "lua/cairo.c",
+        "lua/configuration.c",
+        "lua/database.c",
+        "lua/film.c",
+        "lua/format.c",
+        "lua/gui.c",
+        "lua/guides.c",
+        "lua/image.c",
+        "lua/lib.c",
+        "lua/luastorage.c",
+        "lua/metadata.c",
+        "lua/password.c",
+        "lua/preferences.c",
+        "lua/print.c",
+        "lua/storage.c",
+        "lua/styles.c",
+        "lua/tags.c",
+        "lua/view.c",
+    ],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    deps = CORE_BASE_DEPS + CORE_IMAGEIO_DEPS + CORE_NETWORK_DEPS + [
+        ":darktable_lua_runtime",
+        ":darktable_lua_widgets",
+    ],
+)
+
+dt_core_lib(
+    name = "darktable_lua_ai",
+    srcs = ["lua/ai.c"],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    deps = CORE_BASE_DEPS + CORE_IMAGEIO_DEPS + CORE_AI_DEPS + [
+        ":darktable_imageio_dng",
+        ":darktable_lua_runtime",
+    ],
+    target_compatible_with = AI_TARGET_COMPATIBLE,
+)
+
+dt_core_lib(
+    name = "darktable_lua",
+    srcs = [],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    deps = [
+        ":darktable_lua_bindings",
+        ":darktable_lua_runtime",
+        ":darktable_lua_widgets",
+    ] + select({
+        AI_ENABLED: [":darktable_lua_ai"],
+        "//conditions:default": [],
+    }),
 )
 
 dt_core_lib(
@@ -634,6 +763,7 @@ cc_library(
     deps = CORE_BASE_DEPS + [
         "@onnxruntime_system//:headers",
     ],
+    target_compatible_with = AI_TARGET_COMPATIBLE,
 )
 
 dt_core_lib(
@@ -653,9 +783,11 @@ dt_core_lib(
     textual_hdrs = glob([
         "common/ai/*.h",
     ], allow_empty = True) + [
+        "ai/backend.h",
         "common/ai_models.h",
     ],
     deps = CORE_BASE_DEPS + CORE_NETWORK_DEPS + CORE_AI_DEPS,
+    target_compatible_with = AI_TARGET_COMPATIBLE,
 )
 
 cc_library(
@@ -1109,6 +1241,7 @@ dt_plugin_module(
         "-Wl,-rpath,$$ORIGIN/../..",
         "-Wl,-rpath,$$ORIGIN/../../bazel-solib",
     ],
+    target_compatible_with = AI_TARGET_COMPATIBLE,
 )
 
 filegroup(
@@ -1129,6 +1262,7 @@ dt_plugin_runtime_layout(
     name = "ai_lighttable_plugin_runtime_layout",
     destdir = "plugins/lighttable",
     modules = ["neural_restore"],
+    target_compatible_with = AI_TARGET_COMPATIBLE,
 )
 
 filegroup(
@@ -1371,9 +1505,11 @@ dt_runtime_tree(
 dt_runtime_tree(
     name = "bazel_ai_runtime_tree",
     data = ["//data:runtime_data"],
+    dirname = "darktable-ai-runtime",
     entries = RUNTIME_BINARY_ENTRIES + RUNTIME_PLUGIN_ENTRIES + [
         (":libneural_restore.so", "lib/darktable/plugins/lighttable/libneural_restore.so"),
     ] + RUNTIME_GENERATED_DATA_ENTRIES + RUNTIME_GPHOTO2_ENTRIES,
+    target_compatible_with = AI_TARGET_COMPATIBLE,
 )
 
 genrule(
@@ -1609,6 +1745,7 @@ cc_test(
         ":darktable_ai",
         "@googletest//:gtest",
     ],
+    target_compatible_with = AI_TARGET_COMPATIBLE,
 )
 
 filegroup(

@@ -1,5 +1,10 @@
 build*/
 bazel-*
+.craft/
+parts/
+prime/
+stage/
+*.snap
 obj*/
 *~
 *.pot

@@ -1,0 +1,68 @@
+load("//packaging:install_tree.bzl", "install_tar", "install_tree")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    "darktable-snap-wrapper",
+])
+
+INSTALL_DOC_ENTRIES = [
+    ("//:AUTHORS", "usr/share/doc/darktable/AUTHORS"),
+    ("//:LICENSE", "usr/share/doc/darktable/LICENSE"),
+]
+
+MANPAGE_ENTRIES = [
+    ("//doc/man:darktable_manpage", "usr/share/man/man1/darktable.1"),
+    ("//doc/man:darktable-cli_manpage", "usr/share/man/man1/darktable-cli.1"),
+    ("//doc/man:darktable-generate-cache_manpage", "usr/share/man/man1/darktable-generate-cache.1"),
+    ("//doc/man:darktable-cltest_manpage", "usr/share/man/man1/darktable-cltest.1"),
+    ("//doc/man:darktable-cmstest_manpage", "usr/share/man/man1/darktable-cmstest.1"),
+] + [
+    (
+        "//doc/man:%s_%s.1" % (lang, page),
+        "usr/share/man/%s/man1/%s.1" % (lang, page),
+    )
+    for lang in [
+        "de",
+        "fr",
+        "es",
+    ]
+    for page in [
+        "darktable",
+        "darktable-cli",
+        "darktable-generate-cache",
+        "darktable-cltest",
+        "darktable-cmstest",
+    ]
+]
+
+install_tree(
+    name = "darktable_install_tree",
+    srcs = [entry[0] for entry in INSTALL_DOC_ENTRIES + MANPAGE_ENTRIES],
+    dests = [entry[1] for entry in INSTALL_DOC_ENTRIES + MANPAGE_ENTRIES],
+    runtime_tree = "//src:bazel_runtime_tree",
+)
+
+install_tar(
+    name = "darktable_install_tar",
+    out = "darktable-install.tar",
+    install_tree = ":darktable_install_tree",
+)
+
+install_tree(
+    name = "darktable_snap_payload_tree",
+    srcs = [entry[0] for entry in INSTALL_DOC_ENTRIES + MANPAGE_ENTRIES] + [
+        ":darktable-snap-wrapper",
+    ],
+    dests = [entry[1] for entry in INSTALL_DOC_ENTRIES + MANPAGE_ENTRIES] + [
+        "usr/bin/darktable-snap",
+    ],
+    dirname = "darktable-snap-payload",
+    runtime_tree = "//src:bazel_runtime_tree",
+)
+
+install_tar(
+    name = "darktable_snap_payload_tar",
+    out = "darktable-snap-payload.tar",
+    install_tree = ":darktable_snap_payload_tree",
+)

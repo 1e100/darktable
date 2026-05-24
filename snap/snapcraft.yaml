@@ -1,0 +1,42 @@
+name: darktable
+base: core24
+version: "0.0.0-bazel"
+summary: Photography workflow application and raw developer
+description: |
+  darktable is a virtual lighttable and darkroom for photographers. This
+  experimental package is assembled from the Bazel runtime and install payload.
+
+grade: devel
+confinement: classic
+
+apps:
+  darktable:
+    command: usr/bin/darktable-snap
+
+parts:
+  darktable:
+    plugin: dump
+    source: bazel-bin/packaging/darktable-snap-payload.tar
+    source-type: tar
+    stage-packages:
+      - libatk1.0-0
+      - libcairo2
+      - libcolord-gtk-dev
+      - libcolord2
+      - libcups2
+      - libgdk-pixbuf-2.0-0
+      - libglib2.0-0
+      - libgmic1
+      - libgomp1
+      - libgtk-3-0
+      - libjson-glib-1.0-0
+      - libltdl7
+      - libosmgpsmap-1.0-1
+      - libpango-1.0-0
+      - libpangocairo-1.0-0
+      - librsvg2-2
+      - libsecret-1-0
+      - libwayland-client0
+      - libwayland-cursor0
+      - libx11-6
+      - libxrandr2

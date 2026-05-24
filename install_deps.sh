@@ -20,6 +20,12 @@ packages=(
   perl
   xsltproc
 
+  # Packaging and install-parity generators/validators.
+  appstream-util
+  desktop-file-utils
+  intltool
+  po4a
+
   # Display harness for bounded GUI startup smoke tests.
   xvfb
   xauth
