@@ -32,7 +32,10 @@ build:linux --sandbox_add_mount_pair=/usr/include
 build:linux --sandbox_add_mount_pair=/usr/lib/x86_64-linux-gnu
 
 build:linux_full --config=linux
+build:linux_full --define=darktable_linux_full=true
 build:linux_full --copt=-DHAVE_MAP
+build:linux_full --copt=-DHAVE_OSMGPSMAP_110_OR_NEWER
+build:linux_full --copt=-DHAVE_OSMGPSMAP_NEWER_THAN_110
 build:linux_full --copt=-DUSE_COLORDGTK
 build:linux_full --copt=-DHAVE_LIBSECRET
 build:linux_full --copt=-DHAVE_GMIC

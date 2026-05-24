@@ -130,10 +130,20 @@ The root `.bazelrc` enables Bzlmod and sets common C/C++ defaults:
   milestone: OpenCL, LibRaw, Lua, GPhoto2, JPEG XL, WebP, AVIF,
   HEIF, OpenEXR, OpenJPEG, ICU, and OpenMP.
 
-The `linux_full` configuration exists as a placeholder for fuller desktop
-feature coverage. It currently adds macros for map, colord-gtk, libsecret,
-GMIC, and print support, but those features are not fully modeled as Bazel
-targets yet.
+The `linux_full` configuration extends `linux` with desktop integration
+features that are intentionally kept as system dependencies for now:
+map/OSMGpsMap, colord-gtk display profile integration, libsecret password
+storage, G'MIC compressed LUT support, and CUPS print support.
+
+On Debian/Ubuntu systems, install the development packages with:
+
+```sh
+sudo apt install libcolord-dev libcolord-gtk-dev libsecret-1-dev libosmgpsmap-1.0-dev libcups2-dev libgmic-dev
+```
+
+Most of those integrations are modeled through `pkg-config`. CUPS and G'MIC
+are modeled through the `system_library_repository` rule because this host's
+packages do not provide usable pkg-config metadata for them.
 
 The Linux configuration mounts `/usr/include` and `/usr/lib/x86_64-linux-gnu`
 into the sandbox. This is required while the `pkg-config` rules refer to host
@@ -156,6 +166,9 @@ system headers and libraries.
   darktable source checkout.
 - `pkg_config_repository`, a custom repository rule in
   `bazel/pkg_config.bzl`, for transitional system dependencies.
+- `system_library_repository`, also in `bazel/pkg_config.bzl`, for transitional
+  system dependencies that have stable headers/libraries but no usable
+  pkg-config file on the target distro.
 
 Vendored local repositories currently modeled through `new_local_repository`
 are:
@@ -472,7 +485,8 @@ The Bazel build is not a replacement for the full CMake build yet. Known gaps:
   installation target.
 - The generated `config.h` is a Linux milestone approximation rather than a
   complete configure system.
-- `linux_full` feature coverage is incomplete.
+- `linux_full` covers the map, print, colord-gtk, libsecret, and G'MIC feature
+  macros, but broader optional feature parity is still incomplete.
 - Several non-leaf or broader libraries still come from `pkg-config` and system
   packages.
 - Translated desktop/appstream metadata, manpages, documentation, and package

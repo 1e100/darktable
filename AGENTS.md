@@ -228,9 +228,10 @@ Optional desktop/system feature probes include:
   `darktable_core_compile`; replacing that edge with a correct shared
   `libdarktable.so` API link requires making that shared library export the
   symbols used by the binaries and modules.
-- Expand `linux_full` feature coverage: map/OSMGpsMap, print/CUPS,
-  colord/colord-gtk, libsecret, GMIC compressed LUTs, ImageMagick,
-  AI/ONNXRuntime, cmstest, chart tools/tests, basecurve tools, and noise tools.
+- `linux_full` now models map/OSMGpsMap, print/CUPS, colord/colord-gtk,
+  libsecret, and GMIC compressed LUTs as system dependencies. Remaining fuller
+  feature parity work includes ImageMagick, AI/ONNXRuntime, cmstest, chart
+  tools/tests, basecurve tools, and noise tools.
 - Add PortMidi support for the MIDI lighttable plugin only if that plugin is
   intentionally enabled and `portmidi.h`, `libportmidi`, or `portmidi.pc` is
   available or modeled hermetically.
