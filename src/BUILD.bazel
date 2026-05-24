@@ -10,6 +10,11 @@ darktable_generated_headers()
 
 AI_ENABLED = "//bazel/config:ai_enabled"
 
+AI_TARGET_COMPATIBLE = select({
+    AI_ENABLED: [],
+    "//conditions:default": ["@platforms//:incompatible"],
+})
+
 COMMON_COPTS = [
     "-D_GNU_SOURCE",
     "-include",
@@ -716,6 +721,7 @@ dt_core_lib(
         ":darktable_imageio_dng",
         ":darktable_lua_runtime",
     ],
+    target_compatible_with = AI_TARGET_COMPATIBLE,
 )
 
 dt_core_lib(
@@ -757,6 +763,7 @@ cc_library(
     deps = CORE_BASE_DEPS + [
         "@onnxruntime_system//:headers",
     ],
+    target_compatible_with = AI_TARGET_COMPATIBLE,
 )
 
 dt_core_lib(
@@ -776,9 +783,11 @@ dt_core_lib(
     textual_hdrs = glob([
         "common/ai/*.h",
     ], allow_empty = True) + [
+        "ai/backend.h",
         "common/ai_models.h",
     ],
     deps = CORE_BASE_DEPS + CORE_NETWORK_DEPS + CORE_AI_DEPS,
+    target_compatible_with = AI_TARGET_COMPATIBLE,
 )
 
 cc_library(
@@ -1228,6 +1237,7 @@ dt_plugin_module(
         "-Wl,-rpath,$$ORIGIN/../..",
         "-Wl,-rpath,$$ORIGIN/../../bazel-solib",
     ],
+    target_compatible_with = AI_TARGET_COMPATIBLE,
 )
 
 filegroup(
@@ -1248,6 +1258,7 @@ dt_plugin_runtime_layout(
     name = "ai_lighttable_plugin_runtime_layout",
     destdir = "plugins/lighttable",
     modules = ["neural_restore"],
+    target_compatible_with = AI_TARGET_COMPATIBLE,
 )
 
 filegroup(
@@ -1490,9 +1501,11 @@ dt_runtime_tree(
 dt_runtime_tree(
     name = "bazel_ai_runtime_tree",
     data = ["//data:runtime_data"],
+    dirname = "darktable-ai-runtime",
     entries = RUNTIME_BINARY_ENTRIES + RUNTIME_PLUGIN_ENTRIES + [
         (":libneural_restore.so", "lib/darktable/plugins/lighttable/libneural_restore.so"),
     ] + RUNTIME_GENERATED_DATA_ENTRIES + RUNTIME_GPHOTO2_ENTRIES,
+    target_compatible_with = AI_TARGET_COMPATIBLE,
 )
 
 genrule(
@@ -1727,6 +1740,7 @@ cc_test(
         ":darktable_ai",
         "@googletest//:gtest",
     ],
+    target_compatible_with = AI_TARGET_COMPATIBLE,
 )
 
 filegroup(

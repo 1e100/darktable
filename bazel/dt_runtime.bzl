@@ -90,11 +90,12 @@ runtime_tree = rule(
     },
 )
 
-def dt_runtime_tree(name, entries, data = [], dirname = "darktable-runtime"):
+def dt_runtime_tree(name, entries, data = [], dirname = "darktable-runtime", target_compatible_with = []):
     runtime_tree(
         name = name,
         srcs = [entry[0] for entry in entries],
         dests = [entry[1] for entry in entries],
         data = data,
         dirname = dirname,
+        target_compatible_with = target_compatible_with,
     )
