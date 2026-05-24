@@ -257,7 +257,7 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
   if(*histogram && histogram_max)
   {
     // RGB, Lab, and LCh
-    if(cst == IOP_CS_RGB || IOP_CS_LAB)
+    if(cst == IOP_CS_RGB || cst == IOP_CS_LAB)
     {
       uint32_t *hist = *histogram;
 
