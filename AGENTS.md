@@ -205,6 +205,9 @@ Optional desktop/system feature probes include:
   `share/lensfun/version_1` in the Bazel runtime tree.
 - curl uses the BCR `curl` module through `//third_party/curl:curl`; TLS and
   support libraries come from that module's Bzlmod dependency closure.
+- SQLite is linked by `libdarktable.so`; plugin compile-only header access uses
+  `//third_party/sqlite:sqlite_headers` so plugins do not embed a second SQLite
+  implementation while operating on core-owned database handles.
 - libjxl is pinned to upstream 0.11.2 through a Bzlmod `archive_override`.
   `//third_party/jxl:jxl` aggregates `jpegxl` and `jpegxl_threads`; Brotli,
   Highway, and skcms come from BCR.
@@ -241,8 +244,9 @@ Optional desktop/system feature probes include:
   initialized image I/O and IOP module registries. `bazel_cli_export_smoke_test`
   exercises a real JPEG export through the arranged `darktable-cli`.
   `bazel_cli_runtime_variants_smoke_test` adds headless CLI help coverage and
-  JPEG/PNG export checks. Remaining coverage should add carefully bounded
-  GUI/view initialization.
+  JPEG/PNG export checks. `bazel_gui_init_smoke_test` runs the runtime tree
+  under Xvfb, initializes the GTK/view path, checks the built-in views, and
+  exits before entering the GTK main loop.
 - Small legacy unit tests now have Bazel coverage through
   `darktable_cache_test`, `darktable_variables_test`, `sample_gtest`,
   `filmicrgb_gtest`, and optional `ai_backend_gtest`. Do not add cmocka to the
@@ -285,6 +289,7 @@ bazel test --config=linux //src:darktable_cache_test //src:darktable_variables_t
 bazel test --config=linux //src:bazel_runtime_smoke_test
 bazel test --config=linux //src:bazel_plugin_load_smoke_test
 bazel test --config=linux //src:bazel_plugin_init_smoke_test
+bazel test --config=linux //src:bazel_gui_init_smoke_test
 bazel test --config=linux //src:bazel_cli_export_smoke_test
 bazel test --config=linux //src:bazel_cli_runtime_variants_smoke_test
 bazel test --config=linux //src:bazel_sqliteicu_smoke_test

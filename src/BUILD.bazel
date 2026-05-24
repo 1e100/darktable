@@ -327,7 +327,7 @@ PUBLIC_HEADER_DEPS = [
     "//third_party/jpeg:jpeg",
     "//third_party/lcms2:lcms2",
     "//third_party/png:png",
-    "//third_party/sqlite:sqlite",
+    "//third_party/sqlite:sqlite_headers",
     "@gtk_stack//:pkg",
     "@lautoc//:lautoc",
     "@lua_internal//:lua",
@@ -795,7 +795,7 @@ cc_library(
         ":darktable_plugin_headers",
         ":potrace_system",
         "//third_party/lcms2:lcms2",
-        "//third_party/sqlite:sqlite",
+        "//third_party/sqlite:sqlite_headers",
         "@gtk_stack//:pkg",
         "@lautoc//:lautoc",
         "@lua_internal//:lua",
@@ -1420,6 +1420,32 @@ cc_test(
         ":darktable_public_headers",
         ":darktable_shared",
         "@googletest//:gtest",
+    ],
+)
+
+cc_binary(
+    name = "bazel_gui_init_smoke",
+    srcs = ["bazel_gui_init_smoke_test.cc"],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    linkopts = ["-Wl,-rpath,$$ORIGIN/../lib/darktable"],
+    deps = [
+        ":darktable_public_headers",
+        ":darktable_shared",
+    ] + PUBLIC_HEADER_DEPS + LINUX_DESKTOP_MAP_DEPS + LINUX_DESKTOP_PRINT_DEPS,
+)
+
+sh_test(
+    name = "bazel_gui_init_smoke_test",
+    srcs = ["//bazel:gui_init_smoke_test.sh"],
+    args = [
+        "$(rootpath :bazel_gui_init_smoke)",
+        "$(rootpath :bazel_runtime_tree)",
+    ],
+    data = [
+        ":bazel_gui_init_smoke",
+        ":bazel_runtime_tree",
+        "//bazel:runtime_test_lib.sh",
     ],
 )
 

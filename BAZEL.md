@@ -131,6 +131,19 @@ runtime tree's image I/O format plugins, image I/O storage plugins, and IOP
 plugins are present in darktable's module registries with their required API
 callbacks wired. It intentionally stops before GUI/view initialization.
 
+Bounded GTK/view initialization is covered by:
+
+```sh
+bazel test --config=linux //src:bazel_gui_init_smoke_test
+```
+
+This test runs the same runtime tree under `xvfb-run`, initializes darktable
+with GUI mode enabled, uses isolated config/cache/data directories under
+`TEST_TMPDIR`, and verifies that the GUI and view manager come up with the
+expected built-in views. It exits before entering the GTK main loop. The test
+requires the `xvfb` and `xauth` host packages, which are installed by
+`install_deps.sh`.
+
 The first real CLI workflow smoke test exports a bundled JPEG through the
 runtime tree's `darktable-cli`:
 
@@ -436,6 +449,11 @@ patch materializes the CMake-generated `exv_conf.h` and `exiv2lib_export.h`
 headers for the selected feature set. NLS, webready/curl-backed HTTP IO, and
 inih-based Exiv2 user config parsing are intentionally disabled in the Bazel
 overlay.
+
+SQLite is linked into `libdarktable.so`. Header-only access for plugin compile
+targets goes through `//third_party/sqlite:sqlite_headers`, so plugins that
+include darktable view/common headers do not embed a second SQLite copy and then
+operate on core-owned database handles with a mismatched SQLite implementation.
 
 libgphoto2 is pinned to upstream 2.5.33 from the GitHub release archive with a
 native `third_party/gphoto2/libgphoto2.BUILD` overlay. The overlay builds the

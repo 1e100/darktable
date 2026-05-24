@@ -20,6 +20,10 @@ packages=(
   perl
   xsltproc
 
+  # Display harness for bounded GUI startup smoke tests.
+  xvfb
+  xauth
+
   # GTK/desktop stack kept as the explicit system boundary.
   libgtk-3-dev
   libglib2.0-dev

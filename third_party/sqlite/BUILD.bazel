@@ -1,7 +1,13 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "sqlite_headers",
+    hdrs = ["@sqlite3//:sqlite3.h"],
+)
 
 alias(
     name = "sqlite",
     actual = "@sqlite3//:sqlite3",
 )
-
