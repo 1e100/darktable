@@ -37,7 +37,7 @@ endmacro()
 # Avoid useless copy&pasta by doing what most simple libraries do anyway:
 # pkg-config, find headers, find library.
 # Usage: libfind_pkg_detect(<prefix> <pkg-config args> FIND_PATH <name> [other args] FIND_LIBRARY <name> [other args])
-# E.g. libfind_pkg_detect(SDL2 sdl2 FIND_PATH SDL.h PATH_SUFFIXES SDL2 FIND_LIBRARY SDL2)
+# E.g. libfind_pkg_detect(FOO foo FIND_PATH foo.h FIND_LIBRARY foo)
 function (libfind_pkg_detect PREFIX)
   # Parse arguments
   set(argname pkgargs)

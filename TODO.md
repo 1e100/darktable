@@ -6,7 +6,6 @@
 - Defer gnarly or broad dependency stacks: GTK/Cairo/Pango/Rsvg/GLib, libgphoto2, Wayland/desktop integration, Exiv2, libcurl/TLS, OpenEXR/Imath, ICU, GraphicsMagick, AVIF/HEIF/JPEG XL.
 - Expand `linux_full` feature coverage: map/OSMGpsMap, print/CUPS, colord/colord-gtk, libsecret, GMIC compressed LUTs, ImageMagick, AI/ONNXRuntime, cmstest, chart tools/tests, basecurve tools, and noise tools.
 - Add PortMidi support for the MIDI lighttable plugin once `portmidi.h`, `libportmidi`, and/or `portmidi.pc` are available on the build host or modeled hermetically.
-- Delete the legacy CMake SDL2/gamepad path when the project is ready to drop gamepad input support entirely. The Bazel milestone already omits SDL2 and the `gamepad` plugin.
 - Replace the static Linux `config.h` approximation with explicit Bazel feature configuration or probes that track the CMake feature matrix.
 - Add macOS support with platform-specific configuration, framework linking, install-name/RPATH handling, and replacements for Linux-only linker and sandbox options.
 - Add Bazel test coverage for unit tests, integration tests where practical, plugin loading smoke tests, and runtime-tree smoke tests using both `--moduledir` and `--datadir`.

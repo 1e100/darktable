@@ -356,7 +356,6 @@ The Bazel build is not a replacement for the full CMake build yet. Known gaps:
 - The generated `config.h` is a Linux milestone approximation rather than a
   complete configure system.
 - `linux_full` feature coverage is incomplete.
-- SDL2/gamepad input is intentionally omitted from the Bazel milestone.
 - Several non-leaf or broader libraries still come from `pkg-config` and system
   packages.
 - Translated desktop/appstream metadata, manpages, documentation, and package

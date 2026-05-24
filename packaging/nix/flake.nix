@@ -43,7 +43,6 @@
             buildInputs =
               with pkgs;
               [
-                SDL2
                 adwaita-icon-theme
                 cairo
                 curl

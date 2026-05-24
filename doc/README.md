@@ -20,7 +20,6 @@ Optionally, you might need for special features:
 
  - `libcups2` (for the print module)
  - `gphoto2` (for camera support, recommended)
- - `SDL`, SDL-image and Mesa OpenGL (to build darktable-viewer)
  - `osm-gps-map` for geo tagging view
  - `lensfun` (lens distortion plugin)
  - `libheif` for reading HEIF/HEIC images
