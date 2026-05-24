@@ -103,6 +103,11 @@ bazel build --config=linux --copt=-DDT_BAZEL_SANDBOX_VERIFY //src:bazel_build_mi
 - `MODULE.bazel.lock` is checked in and should be updated when dependency
   resolution changes.
 - `.bazelrc` enables Bzlmod and sets shared C/C++ defaults.
+- `bazel/darktable_features.bzl` owns the current Linux feature configuration
+  for generated `config.h`, supported extensions, and generated OpenCL-aware
+  preference/config headers. Do not add darktable feature macros back to
+  `.bazelrc`; keep them in this Starlark feature map unless a real platform
+  probe layer replaces it.
 - `bazel/pkg_config.bzl` defines `pkg_config_repository`, the transitional
   system dependency bridge.
 - `bazel/third_party/` contains BUILD overlays for vendored source trees under
@@ -235,8 +240,8 @@ Optional desktop/system feature probes include:
 - Add PortMidi support for the MIDI lighttable plugin only if that plugin is
   intentionally enabled and `portmidi.h`, `libportmidi`, or `portmidi.pc` is
   available or modeled hermetically.
-- Replace the static Linux `config.h` approximation with explicit Bazel feature
-  configuration or probes that track the CMake feature matrix.
+- Add platform/compiler probes where hard-coded Linux feature values are not
+  appropriate, especially before introducing macOS support.
 - Add macOS support.
 - Add Bazel test coverage for unit tests, integration tests where practical,
   plugin loading smoke tests, and runtime-tree smoke tests using both

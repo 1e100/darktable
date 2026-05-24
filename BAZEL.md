@@ -126,11 +126,20 @@ The root `.bazelrc` enables Bzlmod and sets common C/C++ defaults:
   repository is compiled as C++20 rather than carrying a target-local override.
 - C defaults to C99.
 - `HAVE_CONFIG_H`, `_XOPEN_SOURCE=700`, and PIC are applied globally.
-- The Linux configuration enables the feature macros needed by the current
-  milestone: OpenCL, LibRaw, Lua, GPhoto2, JPEG XL, WebP, AVIF, HEIF, OpenEXR,
-  OpenJPEG, ICU, OpenMP, map/OSMGpsMap, colord-gtk display profile
-  integration, libsecret password storage, G'MIC compressed LUT support, and
-  CUPS print support.
+
+Linux feature configuration is owned by `bazel/darktable_features.bzl`, not by
+ad hoc `--copt=-D...` entries in `.bazelrc`. That file is the current source of
+truth for:
+
+- generated `config.h` package/install constants
+- generated `config.h` feature macros
+- generated `dt_supported_extensions`
+- generated `HAVE_OPENCL` values used by preference/config header generation
+
+The current Linux feature set enables OpenCL, LibRaw, Lua, GPhoto2, JPEG XL,
+WebP, AVIF, HEIF, OpenEXR, OpenJPEG, ICU, OpenMP, map/OSMGpsMap, colord-gtk
+display profile integration, libsecret password storage, G'MIC compressed LUT
+support, and CUPS print support.
 
 The Linux desktop integrations are intentionally kept as system dependencies
 for now.
@@ -387,9 +396,13 @@ core source targets:
 - `styles_string.h`
 
 These are generated with Bazel `genrule`s using existing darktable scripts and
-data files wherever practical. The generated `config.h` is currently a
-Linux-focused static approximation of CMake configure output for the milestone
-target.
+data files wherever practical.
+
+The generated `config.h` is produced from the explicit Linux feature map in
+`bazel/darktable_features.bzl`. This keeps feature macros, install paths, and
+extension lists in one Bazel-owned place instead of scattering configure
+results through `.bazelrc` compile flags. It is still a Linux configuration,
+not a portable configure-probe system.
 
 ## Source Targets
 
@@ -483,8 +496,9 @@ The Bazel build is not a replacement for the full CMake build yet. Known gaps:
   replacements for Linux-specific feature probes and link options.
 - `bazel_runtime_tree` is a runnable tree, not a distro package or system
   installation target.
-- The generated `config.h` is a Linux milestone approximation rather than a
-  complete configure system.
+- The generated `config.h` is driven by an explicit Linux feature map rather
+  than live configure probes. macOS and any other future platform need their own
+  platform feature maps or a principled probe layer.
 - The Linux configuration covers the map, print, colord-gtk, libsecret, and
   G'MIC feature macros, but broader optional feature parity is still
   incomplete.
