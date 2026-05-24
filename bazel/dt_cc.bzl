@@ -69,8 +69,7 @@ def dt_plugin_module(
         linkopts = linkopts + [
             "-shared",
             "-Wl,-Bsymbolic",
-            "-Wl,--exclude-libs,ALL",
-            "-Wl,--unresolved-symbols=ignore-in-shared-libs",
+            "-Wl,--unresolved-symbols=ignore-all",
             "-Wl,--allow-shlib-undefined",
         ],
         linkshared = True,

@@ -17,3 +17,17 @@ build:linux --linkopt=-fopenmp
 build:linux --linkopt=-Wl,--enable-new-dtags
 build:linux --sandbox_add_mount_pair=/usr/include
 build:linux --sandbox_add_mount_pair=/usr/lib/x86_64-linux-gnu
+
+# AddressSanitizer: heap corruption, buffer overflows, use-after-free
+# Note: target //src:darktable-cli for ASan testing — it links statically and
+# avoids the cc_import/shared-library link-graph issues that affect //src:darktable.
+build:asan --copt=-fsanitize=address
+build:asan --copt=-fno-omit-frame-pointer
+build:asan --copt=-O1
+build:asan --linkopt=-fsanitize=address
+
+# MemorySanitizer: uninitialized reads (requires all deps compiled with msan)
+build:msan --copt=-fsanitize=memory
+build:msan --copt=-fno-omit-frame-pointer
+build:msan --copt=-O1
+build:msan --linkopt=-fsanitize=memory

@@ -713,6 +713,7 @@ cc_binary(
     includes = COMMON_INCLUDES,
     linkopts = ["-Wl,-rpath,$$ORIGIN/../lib/darktable"],
     deps = [
+        ":darktable_core_compile",
         ":darktable_public_headers",
         ":darktable_shared",
     ],
@@ -725,6 +726,7 @@ cc_binary(
     includes = COMMON_INCLUDES,
     linkopts = ["-Wl,-rpath,$$ORIGIN/../lib/darktable"],
     deps = [
+        ":darktable_core_compile",
         ":darktable_public_headers",
         ":darktable_shared",
         "@whereami//:whereami",
@@ -738,6 +740,7 @@ cc_binary(
     includes = COMMON_INCLUDES,
     linkopts = ["-Wl,-rpath,$$ORIGIN/../lib/darktable"],
     deps = [
+        ":darktable_core_compile",
         ":darktable_public_headers",
         ":darktable_shared",
     ],
@@ -750,6 +753,7 @@ cc_binary(
     includes = COMMON_INCLUDES,
     linkopts = ["-Wl,-rpath,$$ORIGIN/../lib/darktable"],
     deps = [
+        ":darktable_core_compile",
         ":darktable_public_headers",
         ":darktable_shared",
         "@whereami//:whereami",
@@ -790,12 +794,12 @@ cc_binary(
         "chart/thinplate.h",
         "chart/tonecurve.c",
         "chart/tonecurve.h",
-        "common/pfm.c",
     ],
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES + ["chart"],
     linkopts = ["-Wl,-rpath,$$ORIGIN/../lib/darktable"],
     deps = [
+        ":darktable_core_compile",
         ":darktable_public_headers",
         ":darktable_shared",
         "//third_party/lcms2:lcms2",
@@ -1481,6 +1485,7 @@ cc_test(
     linkopts = ["-Wl,-rpath,$$ORIGIN/../lib/darktable"],
     size = "small",
     deps = [
+        ":darktable_core_compile",
         ":darktable_public_headers",
         ":darktable_shared",
         "@googletest//:gtest",

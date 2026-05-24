@@ -5,6 +5,7 @@ PLATFORM_FEATURES = {
         "feature_defines": {
             "HAVE_CPUID_H": "1",
             "HAVE___GET_CPUID": "1",
+            "HAVE_THREAD_RWLOCK_ARCH_T_READERS": "1",
             "HAVE_OMP_FIRSTPRIVATE_WITH_CONST": "1",
             "HAVE_OPENCL": "1",
             "HAVE_LIBRAW": "1",
