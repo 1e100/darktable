@@ -12,10 +12,10 @@ libraries and linker flags.
 Use Bazelisk, or a `bazel` launcher backed by Bazelisk. The repository pins the
 Bazel version in `.bazelversion`.
 
-Current Linux host packages outside the pinned Bzlmod/source-archive closure are
-the GTK desktop stack, Wayland client integration, and GNU
-libltdl for libgphoto2's upstream module loader. On Debian/Ubuntu, install the
-current host package set with:
+Current Linux host packages outside the pinned Bzlmod/source-archive closure
+are the GTK desktop stack, Wayland/X11 desktop integration, and GNU libltdl for
+libgphoto2's upstream module loader. On Debian/Ubuntu, install the current host
+package set with:
 
 ```sh
 ./install_deps.sh
@@ -30,7 +30,11 @@ The current milestone target builds:
 - `//src:darktable`
 - `//src:darktable-cli`
 - `//src:darktable-cltest`
+- `//src:darktable-cmstest`
+- `//src:darktable-chart`
+- `//src:darktable-curve-tool`
 - `//src:darktable-generate-cache`
+- `//src:darktable-noiseprofile`
 - `//src:libdarktable.so`
 - `//src:bazel_plugin_milestone`
 - `//src:bazel_runtime_tree`
@@ -69,9 +73,12 @@ bazel build --config=linux //src:bazel_runtime_tree
 This produces `bazel-bin/src/darktable-runtime`, with:
 
 - `bin/` containing `darktable`, `darktable-cli`, `darktable-cltest`,
-  `darktable-generate-cache`, and a `darktable-bazel` launcher.
+  `darktable-cmstest`, `darktable-chart`, `darktable-generate-cache`, and a
+  `darktable-bazel` launcher.
 - `lib/darktable/` containing `libdarktable.so`, views, IOP plugins,
   lighttable plugins, and image I/O plugins.
+- `libexec/darktable/tools/` containing basecurve and noise profiling helper
+  tools.
 - `share/darktable/` containing runtime data, generated `darktablerc`,
   generated `darktableconfig.xml`, RawSpeed camera data, Lua scripts, OpenCL
   kernels, styles, themes, watermarks, pixmaps, and helper scripts.
@@ -146,6 +153,17 @@ That test points `ICU_DATA` at the generated runtime tree, opens an in-memory
 SQLite database, registers `src/common/sqliteicu.c`, and verifies that
 `icu_load_collation` can create an ICU-backed collation.
 
+Auxiliary tools have a lightweight smoke test:
+
+```sh
+bazel test --config=linux //src:bazel_auxiliary_tools_smoke_test
+```
+
+This test checks stable usage/version behavior for `darktable-cmstest`,
+`darktable-chart`, `darktable-curve-tool`, and `darktable-noiseprofile` without
+requiring an X11 session, chart inputs, PFM inputs, or raw/JPEG calibration
+pairs.
+
 Several small legacy unit tests are also modeled directly under Bazel:
 
 ```sh
@@ -194,7 +212,7 @@ truth for:
 The current Linux feature set enables OpenCL, LibRaw, Lua, GPhoto2, JPEG XL,
 WebP, AVIF, HEIF, OpenEXR, OpenJPEG, ICU, OpenMP, map/OSMGpsMap, colord-gtk
 display profile integration, libsecret password storage, G'MIC compressed LUT
-support, and CUPS print support.
+support, CUPS print support, and X11/Xrandr support for `darktable-cmstest`.
 
 The Linux desktop integrations are intentionally kept as system dependencies
 for now. `install_deps.sh` installs the development packages for those

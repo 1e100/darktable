@@ -34,6 +34,8 @@ packages=(
   # Optional Linux desktop integrations enabled by the Bazel Linux config.
   libcolord-dev
   libcolord-gtk-dev
+  libx11-dev
+  libxrandr-dev
   libsecret-1-dev
   libosmgpsmap-1.0-dev
   libcups2-dev

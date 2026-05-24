@@ -3,6 +3,7 @@ package(default_visibility = ["//visibility:public"])
 exports_files(glob(["*.bzl"]))
 
 exports_files([
+    "auxiliary_tools_smoke_test.sh",
     "cli_export_smoke_test.sh",
     "runtime_smoke_test.sh",
     "sqliteicu_smoke_test.sh",

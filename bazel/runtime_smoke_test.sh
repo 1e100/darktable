@@ -49,8 +49,14 @@ require_executable() {
 
 require_executable "bin/darktable"
 require_executable "bin/darktable-cli"
+require_executable "bin/darktable-chart"
 require_executable "bin/darktable-generate-cache"
+require_executable "bin/darktable-cmstest"
 require_executable "bin/darktable-bazel"
+require_executable "libexec/darktable/tools/darktable-curve-tool"
+require_executable "libexec/darktable/tools/darktable-curve-tool-helper"
+require_executable "libexec/darktable/tools/darktable-gen-noiseprofile"
+require_executable "libexec/darktable/tools/darktable-noiseprofile"
 
 require_file "lib/darktable/libdarktable.so"
 
@@ -74,6 +80,8 @@ require_file "share/darktable/rawspeed/cameras.xml"
 require_file "share/darktable/icu/icudt78l.dat"
 require_file "share/darktable/darktablerc"
 require_file "share/darktable/darktableconfig.xml"
+require_file "share/darktable/tools/basecurve/plot.basecurve"
+require_file "share/darktable/tools/basecurve/plot.tonecurve"
 require_file "share/lensfun/version_1/timestamp.txt"
 require_file "share/lensfun/version_1/slr-canon.xml"
 require_dir "share/locale"

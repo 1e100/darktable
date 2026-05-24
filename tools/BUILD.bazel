@@ -2,6 +2,11 @@ package(default_visibility = ["//visibility:public"])
 
 exports_files([
     "authors_h.sh",
+    "basecurve/darktable-curve-tool.c",
+    "basecurve/darktable-curve-tool-helper",
+    "basecurve/exif-wrapper.cpp",
+    "basecurve/plot.basecurve",
+    "basecurve/plot.tonecurve",
     "create_version_c.sh",
     "get_last_commit_year.sh",
     "generate_darktablerc.xsl",
@@ -13,6 +18,10 @@ exports_files([
     "introspection/parser.pm",
     "introspection/parser.pl",
     "introspection/scanner.pm",
+    "noise/darktable-gen-noiseprofile",
+    "noise/noiseprofile.c",
+    "noise/profiling-shot.xmp",
+    "noise/subr.sh",
 ])
 
 filegroup(name = "authors_h", srcs = ["authors_h.sh"])
@@ -35,6 +44,31 @@ filegroup(
         "purge_unused_tags.sh",
     ],
 )
+
+filegroup(
+    name = "basecurve_runtime_tools",
+    srcs = [
+        "basecurve/darktable-curve-tool-helper",
+    ],
+)
+
+filegroup(
+    name = "basecurve_runtime_data",
+    srcs = [
+        "basecurve/plot.basecurve",
+        "basecurve/plot.tonecurve",
+    ],
+)
+
+filegroup(
+    name = "noise_runtime_tools",
+    srcs = [
+        "noise/darktable-gen-noiseprofile",
+        "noise/profiling-shot.xmp",
+        "noise/subr.sh",
+    ],
+)
+
 filegroup(
     name = "introspection_tools",
     srcs = [

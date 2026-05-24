@@ -356,6 +356,7 @@ LINUX_DESKTOP_LIBSECRET_DEPS = ["@darktable_linux_desktop_libsecret//:pkg"]
 LINUX_DESKTOP_MAP_DEPS = ["@darktable_linux_desktop_map//:pkg"]
 LINUX_DESKTOP_PRINT_DEPS = ["@darktable_linux_desktop_cups//:pkg"]
 LINUX_DESKTOP_GMIC_DEPS = ["@darktable_linux_desktop_gmic//:pkg"]
+LINUX_DESKTOP_X11_DEPS = ["@darktable_linux_desktop_x11//:pkg"]
 
 CORE_DEPS = [
     ":darktable_public_headers",
@@ -622,6 +623,82 @@ cc_binary(
         ":darktable_shared",
         "@whereami//:whereami",
     ],
+)
+
+cc_binary(
+    name = "darktable-cmstest",
+    srcs = [
+        "cmstest/main.c",
+        ":version_gen.c",
+    ],
+    copts = COMMON_COPTS + [
+        "-DHAVE_X11",
+        "-DHAVE_COLORD",
+    ],
+    includes = COMMON_INCLUDES,
+    deps = [
+        ":darktable_public_headers",
+        "//third_party/lcms2:lcms2",
+        "@gtk_stack//:pkg",
+    ] + LINUX_DESKTOP_COLORD_DEPS + LINUX_DESKTOP_X11_DEPS,
+)
+
+cc_binary(
+    name = "darktable-chart",
+    srcs = [
+        "chart/colorchart.c",
+        "chart/colorchart.h",
+        "chart/common.c",
+        "chart/common.h",
+        "chart/deltaE.c",
+        "chart/deltaE.h",
+        "chart/dtcairo.c",
+        "chart/dtcairo.h",
+        "chart/main.c",
+        "chart/thinplate.c",
+        "chart/thinplate.h",
+        "chart/tonecurve.c",
+        "chart/tonecurve.h",
+        "common/pfm.c",
+    ],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES + ["chart"],
+    linkopts = ["-Wl,-rpath,$$ORIGIN/../lib/darktable"],
+    deps = [
+        ":darktable_public_headers",
+        ":darktable_shared",
+        "//third_party/lcms2:lcms2",
+        "@gtk_stack//:pkg",
+    ],
+)
+
+cc_library(
+    name = "darktable_curve_tool_support",
+    textual_hdrs = ["common/curve_tools.c"],
+    deps = [":darktable_public_headers"],
+)
+
+cc_binary(
+    name = "darktable-curve-tool",
+    srcs = [
+        "//tools:basecurve/darktable-curve-tool.c",
+        "//tools:basecurve/exif-wrapper.cpp",
+    ],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    deps = [
+        ":darktable_curve_tool_support",
+        ":darktable_public_headers",
+        "//third_party/exiv2:exiv2",
+    ],
+)
+
+cc_binary(
+    name = "darktable-noiseprofile",
+    srcs = ["//tools:noise/noiseprofile.c"],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    deps = [":darktable_public_headers"],
 )
 
 cc_binary(
@@ -1008,6 +1085,10 @@ RUNTIME_BINARY_ENTRIES = [
     (":darktable-cli", "bin/darktable-cli"),
     (":darktable-cltest", "bin/darktable-cltest"),
     (":darktable-generate-cache", "bin/darktable-generate-cache"),
+    (":darktable-cmstest", "bin/darktable-cmstest"),
+    (":darktable-chart", "bin/darktable-chart"),
+    (":darktable-curve-tool", "libexec/darktable/tools/darktable-curve-tool"),
+    (":darktable-noiseprofile", "libexec/darktable/tools/darktable-noiseprofile"),
     (":libdarktable.so", "lib/darktable/libdarktable.so"),
 ]
 
@@ -1033,6 +1114,12 @@ RUNTIME_GENERATED_DATA_ENTRIES = [
     ("//tools:purge_from_cache.sh", "share/darktable/tools/purge_from_cache.sh"),
     ("//tools:purge_non_existing_images.sh", "share/darktable/tools/purge_non_existing_images.sh"),
     ("//tools:purge_unused_tags.sh", "share/darktable/tools/purge_unused_tags.sh"),
+    ("//tools:basecurve/darktable-curve-tool-helper", "libexec/darktable/tools/darktable-curve-tool-helper"),
+    ("//tools:basecurve/plot.basecurve", "share/darktable/tools/basecurve/plot.basecurve"),
+    ("//tools:basecurve/plot.tonecurve", "share/darktable/tools/basecurve/plot.tonecurve"),
+    ("//tools:noise/darktable-gen-noiseprofile", "libexec/darktable/tools/darktable-gen-noiseprofile"),
+    ("//tools:noise/profiling-shot.xmp", "libexec/darktable/tools/profiling-shot.xmp"),
+    ("//tools:noise/subr.sh", "libexec/darktable/tools/subr.sh"),
 ] + [
     ("@lensfun//:data/db/%s" % file, "share/lensfun/version_1/%s" % file)
     for file in [
@@ -1152,6 +1239,23 @@ sh_test(
     data = [
         ":bazel_runtime_tree",
         ":bazel_sqliteicu_smoke",
+    ],
+)
+
+sh_test(
+    name = "bazel_auxiliary_tools_smoke_test",
+    srcs = ["//bazel:auxiliary_tools_smoke_test.sh"],
+    args = [
+        "$(rootpath :darktable-cmstest)",
+        "$(rootpath :darktable-chart)",
+        "$(rootpath :darktable-curve-tool)",
+        "$(rootpath :darktable-noiseprofile)",
+    ],
+    data = [
+        ":darktable-cmstest",
+        ":darktable-chart",
+        ":darktable-curve-tool",
+        ":darktable-noiseprofile",
     ],
 )
 
@@ -1276,7 +1380,11 @@ filegroup(
         ":darktable",
         ":darktable-cli",
         ":darktable-cltest",
+        ":darktable-cmstest",
+        ":darktable-chart",
+        ":darktable-curve-tool",
         ":darktable-generate-cache",
+        ":darktable-noiseprofile",
         ":libdarktable.so",
         ":bazel_plugin_milestone",
         ":bazel_plugin_runtime_layout",

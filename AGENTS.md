@@ -248,9 +248,11 @@ Optional desktop/system feature probes include:
   test remains blocked until Bazel has a principled `darktable_ai`/ONNXRuntime
   target.
 - The Linux Bazel configuration models map/OSMGpsMap, print/CUPS,
-  colord/colord-gtk, libsecret, and GMIC compressed LUTs as system
-  dependencies. Remaining fuller feature parity work includes ImageMagick,
-  AI/ONNXRuntime, cmstest, chart tools/tests, basecurve tools, and noise tools.
+  colord/colord-gtk, libsecret, GMIC compressed LUTs, and X11/Xrandr for
+  `darktable-cmstest` as system dependencies. Auxiliary tool build coverage now
+  includes `darktable-cmstest`, `darktable-chart`, `darktable-curve-tool`, and
+  `darktable-noiseprofile`. Remaining fuller feature parity work includes
+  ImageMagick, AI/ONNXRuntime, and end-to-end chart/basecurve/noise workflows.
 - Add PortMidi support for the MIDI lighttable plugin only if that plugin is
   intentionally enabled and `portmidi.h`, `libportmidi`, or `portmidi.pc` is
   available or modeled hermetically.
@@ -282,5 +284,6 @@ bazel test --config=linux //src:bazel_plugin_load_smoke_test
 bazel test --config=linux //src:bazel_plugin_init_smoke_test
 bazel test --config=linux //src:bazel_cli_export_smoke_test
 bazel test --config=linux //src:bazel_sqliteicu_smoke_test
+bazel test --config=linux //src:bazel_auxiliary_tools_smoke_test
 bazel-bin/src/darktable-runtime/bin/darktable-bazel --version
 ```
