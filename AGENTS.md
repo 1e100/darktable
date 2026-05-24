@@ -118,7 +118,10 @@ bazel build --config=linux --copt=-DDT_BAZEL_SANDBOX_VERIFY //src:bazel_build_mi
 - `third_party/` contains root-owned aliases and source-archive BUILD overlays
   for migrated dependencies.
 - `src/BUILD.bazel` currently models the main binaries, core shared library,
-  plugins, generated files, and runtime tree assembly.
+  plugins, generated files, and runtime tree assembly. The core shared library
+  is split into subsystem compile libraries; keep optional/system-feature-heavy
+  code in natural targets such as printing, camera control, and OpenCL helpers
+  instead of folding it back into `darktable_common`.
 
 The transitional `pkg_config_repository` exposes a single `:pkg` target per
 repository. It shells out to `pkg-config`, splits compiler and linker flags, and

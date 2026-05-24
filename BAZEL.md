@@ -581,6 +581,7 @@ localized:
 
 - `darktable_public_headers`
 - `darktable_bauhaus`
+- `darktable_camera_control`
 - `darktable_common`
 - `darktable_control`
 - `darktable_develop`
@@ -589,12 +590,17 @@ localized:
 - `darktable_imageio_core`
 - `darktable_module_apis`
 - `darktable_lua`
+- `darktable_opencl_common`
+- `darktable_printing`
 - `darktable_pwstorage`
 
 `darktable_core_compile` joins those libraries and the generated version source.
 `libdarktable.so` aggregates that compile graph into the runtime shared core,
 and runtime binaries plus plugins link against a `cc_import` wrapper for that
-shared library. Shared library links use `-Wl,-Bsymbolic` so C++ symbols from
+shared core. Optional/system-feature-heavy core code is kept in separate
+subsystem targets where the boundary is natural: CUPS printing, gphoto2 camera
+control, and OpenCL runtime helpers.
+Shared library links use `-Wl,-Bsymbolic` so C++ symbols from
 statically folded leaf libraries remain bound inside each DSO rather than being
 interposed across `libdarktable.so` and plugin `.so` files.
 

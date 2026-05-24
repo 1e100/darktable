@@ -415,20 +415,54 @@ dt_core_lib(
         "common/ai*.c",
         "common/ai/**",
         "common/colormatrices.c",
+        "common/bilateralcl.c",
+        "common/camera_control.c",
         "common/cups_print.c",
+        "common/dlopencl.c",
+        "common/locallaplaciancl.c",
+        "common/opencl.c",
         "common/printing.c",
         "common/printprof.c",
         "common/profiling.c",
-    ], allow_empty = True) + [
+    ], allow_empty = True),
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    deps = CORE_DEPS_WITH_AI + [
+        "@libraw_internal//:libraw",
+    ] + LINUX_DESKTOP_COLORD_DEPS,
+)
+
+dt_core_lib(
+    name = "darktable_printing",
+    srcs = [
         "common/cups_print.c",
         "common/printing.c",
         "common/printprof.c",
     ],
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS_WITH_AI + [
-        "@libraw_internal//:libraw",
-    ] + LINUX_DESKTOP_COLORD_DEPS + LINUX_DESKTOP_PRINT_DEPS,
+    deps = CORE_DEPS_WITH_AI + LINUX_DESKTOP_PRINT_DEPS,
+)
+
+dt_core_lib(
+    name = "darktable_camera_control",
+    srcs = ["common/camera_control.c"],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    deps = CORE_DEPS_WITH_AI,
+)
+
+dt_core_lib(
+    name = "darktable_opencl_common",
+    srcs = [
+        "common/bilateralcl.c",
+        "common/dlopencl.c",
+        "common/locallaplaciancl.c",
+        "common/opencl.c",
+    ],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    deps = CORE_DEPS_WITH_AI,
 )
 
 dt_core_lib(
@@ -605,6 +639,7 @@ cc_library(
     alwayslink = True,
     deps = [
         ":darktable_bauhaus",
+        ":darktable_camera_control",
         ":darktable_common",
         ":darktable_control",
         ":darktable_develop",
@@ -613,6 +648,8 @@ cc_library(
         ":darktable_imageio_core",
         ":darktable_lua",
         ":darktable_module_apis",
+        ":darktable_opencl_common",
+        ":darktable_printing",
         ":darktable_pwstorage",
         ":darktable_public_headers",
         ":potrace_system",
