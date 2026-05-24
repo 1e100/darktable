@@ -1,0 +1,12 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "icu",
+    deps = [
+        "@icu//icu4c/source/common:ustring_case_locale",
+        "@icu//icu4c/source/i18n:collation",
+        "@icu//icu4c/source/stubdata:stubdata",
+    ],
+)

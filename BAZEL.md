@@ -117,7 +117,7 @@ refer to host system headers and libraries.
 - `rules_pkg` for future packaging work.
 - Bazel Central Registry modules for migrated leaf libraries: `zlib`,
   `sqlite3`, `pugixml`, `libpng`, `libjpeg_turbo`, `libxml2`, `libwebp`,
-  and `libtiff`.
+  `libtiff`, `libavif`, `libheif`, `imath`, `openexr`, and `icu`.
 - `http_archive`, declared through Bzlmod `use_repo_rule`, for pinned upstream
   release archives that are not available as usable BCR modules yet.
 - `new_local_repository` for vendored source trees already present in the
@@ -145,8 +145,13 @@ using `//third_party/jpeg:jpeg` even though the current provider is
 
 The current aliases are:
 
+- `//third_party/avif:avif`
+- `//third_party/heif:heif`
+- `//third_party/icu:icu`
+- `//third_party/imath:imath`
 - `//third_party/jpeg:jpeg`
 - `//third_party/lcms2:lcms2`
+- `//third_party/openexr:openexr`
 - `//third_party/openjpeg:openjpeg`
 - `//third_party/png:png`
 - `//third_party/pugixml:pugixml`
@@ -171,6 +176,15 @@ The `libxml2` BCR module is patched through `single_version_override` so its
 root `config.h` does not leak `PACKAGE_*` macros into darktable compile
 actions. Libxml2 itself still sees those macros because the patch only suppresses
 them when darktable's Bazel compile define is present.
+
+The `openexr` BCR module is patched through `single_version_override` to compile
+`OpenEXRCore` with `_DEFAULT_SOURCE`. Darktable's global `_XOPEN_SOURCE=700`
+otherwise hides glibc's endian conversion macros from `<endian.h>`.
+
+The `icu` BCR module does not expose pkg-config-like `icu-uc`, `icu-i18n`, and
+`icu-io` aliases. `//third_party/icu:icu` is a narrow aggregate over the ICU
+targets needed by `src/common/sqliteicu.c`. The current aggregate links ICU's
+stub data target; packaging real ICU data remains a runtime parity item.
 
 Little CMS and OpenJPEG are currently pinned source archives rather than BCR
 modules:
@@ -202,14 +216,16 @@ unmigrated dependencies through `pkg-config` so the Linux build can compile and
 link while native external repositories are added incrementally.
 
 The migrated leaf set is zlib, SQLite, pugixml, libpng, libjpeg-turbo, libxml2,
-WebP, libtiff, Little CMS, and OpenJPEG. RawSpeed and LibRaw now depend on the
-root-owned JPEG/zlib aliases instead of using `-ljpeg`, `-lz`, and the
-aggregate pkg-config probe.
+WebP, libtiff, Little CMS, OpenJPEG, AVIF, HEIF, Imath, OpenEXR, and ICU.
+RawSpeed and LibRaw now depend on the root-owned JPEG/zlib aliases instead of
+using `-ljpeg`, `-lz`, and the aggregate pkg-config probe.
 
 Leaf dependencies still flowing through the transitional probe include libcurl,
-Exiv2, lensfun, libgphoto2, AVIF/HEIF/JPEG XL, Wayland client symbols,
-OpenEXR/Imath, GraphicsMagick, ICU, and similar libraries. `TODO.md`
-tracks which of these are good candidates for later pinned source builds.
+Exiv2, lensfun, libgphoto2, JPEG XL, Wayland client symbols, GraphicsMagick,
+and similar libraries. Wayland remains system-provided with GTK/GDK because the
+code uses it as part of the GTK desktop backend boundary rather than as an
+isolated leaf library. `TODO.md` tracks which of the remaining dependencies are
+good candidates for later pinned source builds.
 
 ## pkg-config Rule
 

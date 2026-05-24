@@ -280,8 +280,13 @@ GENERATED_HDRS = [
 ]
 
 BAZEL_LEAF_DEPS = [
+    "//third_party/avif:avif",
+    "//third_party/heif:heif",
+    "//third_party/icu:icu",
+    "//third_party/imath:imath",
     "//third_party/jpeg:jpeg",
     "//third_party/lcms2:lcms2",
+    "//third_party/openexr:openexr",
     "//third_party/openjpeg:openjpeg",
     "//third_party/png:png",
     "//third_party/pugixml:pugixml",

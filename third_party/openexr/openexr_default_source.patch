@@ -1,0 +1,10 @@
+--- BUILD.bazel
++++ BUILD.bazel
+@@ -256,6 +256,7 @@ cc_library(
+         ":windows": [],
+         "//conditions:default": [
+             "-Wno-error",
++            "-D_DEFAULT_SOURCE",
+         ],
+     }),
+ #    define EXR_HOST_IS_NOT_LITTLE_ENDIAN (__BYTE_ORDER != __LITTLE_ENDIAN)
