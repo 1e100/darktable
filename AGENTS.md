@@ -25,6 +25,9 @@ the Bazel migration.
 - When adding dependency BUILD files manually, keep them small, pinned, and
   close to the upstream library layout. Prefer BCR modules, then pinned upstream
   release archives with custom BUILD overlays.
+- Prefer principled dependency modeling over local compatibility shims. If an
+  upstream library depends on a small system or source dependency, model that
+  dependency explicitly unless there is a clear reason not to.
 - Keep GTK and tightly coupled desktop integration as the explicit system
   boundary. Do not try to hermeticize GTK, Cairo, Pango, Rsvg, GLib, or Wayland
   as part of leaf-dependency work.
@@ -130,6 +133,8 @@ Root-owned aliases currently include:
 - `//third_party/avif:avif`
 - `//third_party/curl:curl`
 - `//third_party/exiv2:exiv2`
+- `//third_party/gphoto2:gphoto2`
+- `//third_party/gphoto2:gphoto2_runtime`
 - `//third_party/heif:heif`
 - `//third_party/icu:icu`
 - `//third_party/imath:imath`
@@ -163,7 +168,6 @@ Keep these system-provided for now:
 
 Remaining transitional probe dependencies include:
 
-- libgphoto2
 - GraphicsMagick
 
 Optional desktop/system feature probes include:
@@ -201,6 +205,12 @@ Optional desktop/system feature probes include:
   builds Exiv2 plus the bundled Adobe XMP SDK, uses BCR `libexpat`, and enables
   PNG/BMFF/Brotli/XMP/filesystem/video support while leaving NLS, webready HTTP
   IO, and inih config parsing disabled.
+- libgphoto2 is pinned to upstream 2.5.33 with a local BUILD overlay. It builds
+  libgphoto2, libgphoto2_port, the `directory` and `ptp2` camera modules, and
+  the `disk`, `ptpip`, `serial`, and `usb1` port modules. USB support uses BCR
+  `libusb`; module loading intentionally uses system `libltdl` instead of a
+  local compatibility shim. The Bazel runtime launcher exports `CAMLIBS` and
+  `IOLIBS` to the packaged module directories.
 - Brotli is patched so its strict C flags do not reject anonymous unions under
   darktable's repo-wide C99 default.
 - Highway is patched so BCR Highway headers are exported for libjxl's
@@ -209,7 +219,7 @@ Optional desktop/system feature probes include:
 ## Remaining Work
 
 - Continue evaluating manageable leaf dependencies for in-tree builds.
-- Defer broad or gnarly stacks: GTK/Cairo/Pango/Rsvg/GLib, libgphoto2,
+- Defer broad or gnarly stacks: GTK/Cairo/Pango/Rsvg/GLib,
   Wayland/desktop integration, and GraphicsMagick.
 - Finish plugin link-graph cleanup. Plugin deps are split by plugin family and
   by direct codec/header usage, but plugins still depend on

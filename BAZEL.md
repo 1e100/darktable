@@ -12,6 +12,15 @@ libraries and linker flags.
 Use Bazelisk, or a `bazel` launcher backed by Bazelisk. The repository pins the
 Bazel version in `.bazelversion`.
 
+Current Linux host packages outside the pinned Bzlmod/source-archive closure are
+the GTK desktop stack, GraphicsMagick/Wayland transitional probes, and GNU
+libltdl for libgphoto2's upstream module loader. On Debian/Ubuntu, the ltdl
+package is:
+
+```sh
+sudo apt install libltdl-dev
+```
+
 ```sh
 bazel build --config=linux //src:bazel_build_milestone
 ```
@@ -171,6 +180,8 @@ The current aliases are:
 - `//third_party/avif:avif`
 - `//third_party/curl:curl`
 - `//third_party/exiv2:exiv2`
+- `//third_party/gphoto2:gphoto2`
+- `//third_party/gphoto2:gphoto2_runtime`
 - `//third_party/heif:heif`
 - `//third_party/icu:icu`
 - `//third_party/imath:imath`
@@ -251,6 +262,18 @@ headers for the selected feature set. NLS, webready/curl-backed HTTP IO, and
 inih-based Exiv2 user config parsing are intentionally disabled in the Bazel
 overlay.
 
+libgphoto2 is pinned to upstream 2.5.33 from the GitHub release archive with a
+native `third_party/gphoto2/libgphoto2.BUILD` overlay. The overlay builds the
+core `libgphoto2` and `libgphoto2_port` libraries from source, uses BCR
+`libusb` for the USB1 port backend, and links against system `libltdl` rather
+than replacing libgphoto2's upstream dynamic module loading path. The Bazel
+runtime tree packages the `directory` and `ptp2` camera modules under
+`lib/darktable/libgphoto2/2.5.33`, packages the `disk`, `ptpip`, `serial`, and
+`usb1` port modules under `lib/darktable/libgphoto2_port/0.12.2`, and the
+generated launcher exports `CAMLIBS` and `IOLIBS` to those directories. The
+overlay supplies the Linux configure headers that the release normally generates
+with Autotools, including `gphoto2-endian.h`.
+
 Little CMS and OpenJPEG are currently pinned source archives rather than BCR
 modules:
 
@@ -280,16 +303,18 @@ explicit GTK-system boundary. `@darktable_linux_system_probe` aggregates
 unmigrated dependencies through `pkg-config` so the Linux build can compile and
 link while native external repositories are added incrementally.
 
-The migrated leaf set is zlib, SQLite, pugixml, curl, Exiv2, JPEG XL, libpng,
-libjpeg-turbo, libxml2, WebP, libtiff, Little CMS, OpenJPEG, AVIF, HEIF, Imath,
-OpenEXR, ICU, and Lensfun.
+The migrated leaf set is zlib, SQLite, pugixml, curl, Exiv2, libgphoto2,
+JPEG XL, libpng, libjpeg-turbo, libxml2, WebP, libtiff, Little CMS, OpenJPEG,
+AVIF, HEIF, Imath, OpenEXR, ICU, and Lensfun.
 RawSpeed and LibRaw now depend on the root-owned JPEG/zlib aliases instead of
 using `-ljpeg`, `-lz`, and the aggregate pkg-config probe.
 
-Leaf dependencies still flowing through the transitional probe include
-libgphoto2, Wayland client symbols, GraphicsMagick, and similar libraries.
-Wayland remains system-provided with GTK/GDK because the code uses it as part of
-the GTK desktop backend boundary rather than as an isolated leaf library.
+Leaf dependencies still flowing through the transitional probe include Wayland
+client symbols, GraphicsMagick, and similar libraries. Wayland remains
+system-provided with GTK/GDK because the code uses it as part of the GTK desktop
+backend boundary rather than as an isolated leaf library. GNU libltdl is also
+system-provided for now because libgphoto2 uses it as its upstream-supported
+portable module loader.
 
 Plugin dependencies are now expressed in smaller buckets. `PLUGIN_DEPS` contains
 the common plugin API and GTK/Lua/system boundary dependencies, while individual

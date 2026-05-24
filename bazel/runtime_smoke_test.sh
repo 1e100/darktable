@@ -66,6 +66,8 @@ require_file "lib/darktable/plugins/libexposure.so"
 require_file "lib/darktable/plugins/lighttable/libcollect.so"
 require_file "lib/darktable/plugins/imageio/format/libjpeg.so"
 require_file "lib/darktable/plugins/imageio/storage/libdisk.so"
+require_file "lib/darktable/libgphoto2/2.5.33/ptp2.so"
+require_file "lib/darktable/libgphoto2_port/0.12.2/usb1.so"
 
 require_dir "share/darktable"
 require_file "share/darktable/rawspeed/cameras.xml"

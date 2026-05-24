@@ -1,0 +1,41 @@
+package(default_visibility = ["//visibility:public"])
+
+alias(
+    name = "gphoto2",
+    actual = "@libgphoto2//:gphoto2",
+)
+
+alias(
+    name = "gphoto2_runtime",
+    actual = "@libgphoto2//:runtime_modules",
+)
+
+alias(
+    name = "gphoto2_port_disk",
+    actual = "@libgphoto2//:disk.so",
+)
+
+alias(
+    name = "gphoto2_port_ptpip",
+    actual = "@libgphoto2//:ptpip.so",
+)
+
+alias(
+    name = "gphoto2_port_serial",
+    actual = "@libgphoto2//:serial.so",
+)
+
+alias(
+    name = "gphoto2_port_usb1",
+    actual = "@libgphoto2//:usb1.so",
+)
+
+alias(
+    name = "gphoto2_camlib_directory",
+    actual = "@libgphoto2//:directory.so",
+)
+
+alias(
+    name = "gphoto2_camlib_ptp2",
+    actual = "@libgphoto2//:ptp2.so",
+)

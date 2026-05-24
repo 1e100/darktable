@@ -286,6 +286,7 @@ BAZEL_LEAF_DEPS = [
     "//third_party/avif:avif",
     "//third_party/curl:curl",
     "//third_party/exiv2:exiv2",
+    "//third_party/gphoto2:gphoto2",
     "//third_party/heif:heif",
     "//third_party/icu:icu",
     "//third_party/imath:imath",
@@ -307,6 +308,7 @@ BAZEL_LEAF_DEPS = [
 
 PUBLIC_HEADER_DEPS = [
     "//third_party/curl:curl",
+    "//third_party/gphoto2:gphoto2",
     "//third_party/jpeg:jpeg",
     "//third_party/lcms2:lcms2",
     "//third_party/png:png",
@@ -1031,10 +1033,19 @@ RUNTIME_GENERATED_DATA_ENTRIES = [
     ]
 ]
 
+RUNTIME_GPHOTO2_ENTRIES = [
+    ("//third_party/gphoto2:gphoto2_camlib_directory", "lib/darktable/libgphoto2/2.5.33/directory.so"),
+    ("//third_party/gphoto2:gphoto2_camlib_ptp2", "lib/darktable/libgphoto2/2.5.33/ptp2.so"),
+    ("//third_party/gphoto2:gphoto2_port_disk", "lib/darktable/libgphoto2_port/0.12.2/disk.so"),
+    ("//third_party/gphoto2:gphoto2_port_ptpip", "lib/darktable/libgphoto2_port/0.12.2/ptpip.so"),
+    ("//third_party/gphoto2:gphoto2_port_serial", "lib/darktable/libgphoto2_port/0.12.2/serial.so"),
+    ("//third_party/gphoto2:gphoto2_port_usb1", "lib/darktable/libgphoto2_port/0.12.2/usb1.so"),
+]
+
 dt_runtime_tree(
     name = "bazel_runtime_tree",
     data = ["//data:runtime_data"],
-    entries = RUNTIME_BINARY_ENTRIES + RUNTIME_PLUGIN_ENTRIES + RUNTIME_GENERATED_DATA_ENTRIES,
+    entries = RUNTIME_BINARY_ENTRIES + RUNTIME_PLUGIN_ENTRIES + RUNTIME_GENERATED_DATA_ENTRIES + RUNTIME_GPHOTO2_ENTRIES,
 )
 
 genrule(

@@ -1,0 +1,245 @@
+diff --git a/bazel/config/config.h b/bazel/config/config.h
+new file mode 100644
+index 000000000..c2c4e92db
+--- /dev/null
++++ b/bazel/config/config.h
+@@ -0,0 +1,80 @@
++#ifndef LIBGPHOTO2_BAZEL_CONFIG_H
++#define LIBGPHOTO2_BAZEL_CONFIG_H
++
++#define GETTEXT_PACKAGE_LIBGPHOTO2 "libgphoto2-6"
++#define GP_CAMLIB_SET "directory ptp2"
++#define HAVE_CC "gcc"
++#define HAVE_DIRENT_H 1
++#define HAVE_DLFCN_H 1
++#define HAVE_GETENV 1
++#define HAVE_GETOPT 1
++#define HAVE_GETOPT_H 1
++#define HAVE_GETOPT_LONG 1
++#define HAVE_GMTIME_R 1
++#define HAVE_INET_ATON 1
++#define HAVE_INTTYPES_H 1
++#define HAVE_LANGINFO_H 1
++#define HAVE_LIBJPEG 1
++#define HAVE_LIBM 1
++#define HAVE_LIBXML2 1
++#define HAVE_LIMITS_H 1
++#define HAVE_LOCALE_H 1
++#define HAVE_LOCALTIME_R 1
++#define HAVE_LSTAT 1
++#define HAVE_LTDL 1
++#define HAVE_MEMORY_H 1
++#define HAVE_MKDIR 1
++#define HAVE_RAND_R 1
++#define HAVE_SETENV 1
++#define HAVE_SNPRINTF 1
++#define HAVE_SPRINTF 1
++#define HAVE_STATVFS 1
++#define HAVE_STDINT_H 1
++#define HAVE_STDIO_H 1
++#define HAVE_STDLIB_H 1
++#define HAVE_STRCPY 1
++#define HAVE_STRDUP 1
++#define HAVE_STRINGS_H 1
++#define HAVE_STRING_H 1
++#define HAVE_STRNCPY 1
++#define HAVE_STRUCT_STATVFS_F_BLOCKS 1
++#define HAVE_SYS_MMAN_H 1
++#define HAVE_SYS_PARAM_H 1
++#define HAVE_SYS_SELECT_H 1
++#define HAVE_SYS_STATVFS_H 1
++#define HAVE_SYS_STAT_H 1
++#define HAVE_SYS_TIME_H 1
++#define HAVE_SYS_TYPES_H 1
++#define HAVE_TM_GMTOFF 1
++#define HAVE_UNISTD_H 1
++#define HAVE_VA_COPY 1
++#define HAVE_VSNPRINTF 1
++#define ICONV_CONST const
++#define LOCALEDIR "/usr/share/locale"
++#define LT_OBJDIR ".libs/"
++#define MAIL_GPHOTO_DEVEL "gphoto-devel@lists.sourceforge.net"
++#define MAIL_GPHOTO_TRANSLATION "gphoto-translation@lists.sourceforge.net"
++#define MAIL_GPHOTO_USER "gphoto-user@lists.sourceforge.net"
++#define PACKAGE "libgphoto2"
++#define PACKAGE_BUGREPORT "gphoto-devel@lists.sourceforge.net"
++#define PACKAGE_NAME "libgphoto2 photo camera library"
++#define PACKAGE_STRING "libgphoto2 photo camera library 2.5.33"
++#define PACKAGE_TARNAME "libgphoto2"
++#define PACKAGE_URL "https://www.gphoto.org/"
++#define PACKAGE_VERSION "2.5.33"
++#define STDC_HEADERS 1
++#define URL_DIGICAM_LIST "http://www.teaser.fr/~hfiguiere/linux/digicam.html"
++#define URL_GPHOTO_HOME "http://www.gphoto.org/"
++#define URL_GPHOTO_PROJECT "https://github.com/gphoto/libgphoto2"
++#define URL_JPHOTO_HOME "http://jphoto.sourceforge.net/"
++#define URL_USB_MASSSTORAGE "http://www.linux-usb.org/USB-guide/x498.html"
++#define VERSION "2.5.33"
++#define _FILE_OFFSET_BITS 64
++#define _GNU_SOURCE 1
++#define _LARGE_FILES 1
++
++#ifndef va_copy
++#define va_copy(d, s) __builtin_va_copy(d, s)
++#endif
++
++#endif
+diff --git a/bazel/port_config/config.h b/bazel/port_config/config.h
+new file mode 100644
+index 000000000..2cc8127a0
+--- /dev/null
++++ b/bazel/port_config/config.h
+@@ -0,0 +1,73 @@
++#ifndef LIBGPHOTO2_PORT_BAZEL_CONFIG_H
++#define LIBGPHOTO2_PORT_BAZEL_CONFIG_H
++
++#define GETTEXT_PACKAGE_LIBGPHOTO2_PORT "libgphoto2_port-12"
++#define HAVE_BYTESWAP_H 1
++#define HAVE_CC "gcc"
++#define HAVE_DIRENT_H 1
++#define HAVE_DLFCN_H 1
++#define HAVE_ENDIAN_H 1
++#define HAVE_ERRNO_H 1
++#define HAVE_FCNTL_H 1
++#define HAVE_FLOCK 1
++#define HAVE_INTTYPES_H 1
++#define HAVE_LIBPTHREAD 1
++#define HAVE_LIBUSB1 1
++#define HAVE_LIBUSB_OPTION_NO_DEVICE_DISCOVERY 1
++#define HAVE_LIBUSB_STRERROR 1
++#define HAVE_LIMITS_H 1
++#define HAVE_LTDL 1
++#define HAVE_REGEX 1
++#define HAVE_SERIAL 1
++#define HAVE_SNPRINTF 1
++#define HAVE_STDINT_H 1
++#define HAVE_STDIO_H 1
++#define HAVE_STDLIB_H 1
++#define HAVE_STRERROR 1
++#define HAVE_STRINGS_H 1
++#define HAVE_STRING_H 1
++#define HAVE_SYS_FILE_H 1
++#define HAVE_SYS_IOCTL_H 1
++#define HAVE_SYS_PARAM_H 1
++#define HAVE_SYS_SELECT_H 1
++#define HAVE_SYS_STAT_H 1
++#define HAVE_SYS_TIME_H 1
++#define HAVE_SYS_TYPES_H 1
++#define HAVE_TERMIOS_H 1
++#define HAVE_UNISTD_H 1
++#define HAVE_VA_COPY 1
++#define HAVE_VSNPRINTF 1
++#define ICONV_CONST const
++#define IOLIB_LIST "disk ptpip serial usb1"
++#define LOCALEDIR "/usr/share/locale"
++#define LT_OBJDIR ".libs/"
++#define MAIL_GPHOTO_DEVEL "gphoto-devel@lists.sourceforge.net"
++#define MAIL_GPHOTO_TRANSLATION "gphoto-translation@lists.sourceforge.net"
++#define MAIL_GPHOTO_USER "gphoto-user@lists.sourceforge.net"
++#define PACKAGE "libgphoto2_port"
++#define PACKAGE_BUGREPORT "gphoto-devel@lists.sourceforge.net"
++#define PACKAGE_NAME "libgphoto2 port access library"
++#define PACKAGE_STRING "libgphoto2 port access library 0.12.2"
++#define PACKAGE_TARNAME "libgphoto2_port"
++#define PACKAGE_URL "https://www.gphoto.org/"
++#define PACKAGE_VERSION "0.12.2"
++#define STDC_HEADERS 1
++#define URL_DIGICAM_LIST "http://www.teaser.fr/~hfiguiere/linux/digicam.html"
++#define URL_GPHOTO_HOME "http://www.gphoto.org/"
++#define URL_GPHOTO_PROJECT "https://github.com/gphoto/libgphoto2"
++#define URL_JPHOTO_HOME "http://jphoto.sourceforge.net/"
++#define URL_USB_MASSSTORAGE "http://www.linux-usb.org/USB-guide/x498.html"
++#define VERSION "0.12.2"
++#define _FILE_OFFSET_BITS 64
++#define _GNU_SOURCE 1
++#define _LARGE_FILES 1
++
++#ifndef IOLIBS
++#define IOLIBS "lib/darktable/libgphoto2_port/0.12.2"
++#endif
++
++#ifndef va_copy
++#define va_copy(d, s) __builtin_va_copy(d, s)
++#endif
++
++#endif
+diff --git a/libgphoto2/gphoto2-endian.h b/libgphoto2/gphoto2-endian.h
+new file mode 100644
+index 000000000..48af0dd4c
+--- /dev/null
++++ b/libgphoto2/gphoto2-endian.h
+@@ -0,0 +1,59 @@
++/* This file is generated by the Bazel overlay for Linux builds. */
++#ifndef GP_BYTEORDER_H
++#define GP_BYTEORDER_H
++
++#include <byteswap.h>
++#include <endian.h>
++#include <stdint.h>
++
++#ifndef htobe16
++#define htobe16(x) __bswap_16(x)
++#endif
++#ifndef htobe32
++#define htobe32(x) __bswap_32(x)
++#endif
++#ifndef htobe64
++#define htobe64(x) __bswap_64(x)
++#endif
++#ifndef be16toh
++#define be16toh(x) __bswap_16(x)
++#endif
++#ifndef be32toh
++#define be32toh(x) __bswap_32(x)
++#endif
++#ifndef be64toh
++#define be64toh(x) __bswap_64(x)
++#endif
++#ifndef htole16
++#define htole16(x) (x)
++#endif
++#ifndef htole32
++#define htole32(x) (x)
++#endif
++#ifndef htole64
++#define htole64(x) (x)
++#endif
++#ifndef le16toh
++#define le16toh(x) (x)
++#endif
++#ifndef le32toh
++#define le32toh(x) (x)
++#endif
++#ifndef le64toh
++#define le64toh(x) (x)
++#endif
++
++#define be16atoh(x) ((uint16_t)(((x)[0] << 8) | (x)[1]))
++#define be32atoh(x) ((uint32_t)(((x)[0] << 24) | ((x)[1] << 16) | ((x)[2] << 8) | (x)[3]))
++#define be64atoh(x) (((uint64_t)be32atoh(x) << 32) | be32atoh((x) + 4))
++#define le16atoh(x) ((uint16_t)(((x)[1] << 8) | (x)[0]))
++#define le32atoh(x) ((uint32_t)(((x)[3] << 24) | ((x)[2] << 16) | ((x)[1] << 8) | (x)[0]))
++#define le64atoh(x) (((uint64_t)le32atoh((x) + 4) << 32) | le32atoh(x))
++#define htobe16a(a, x) ((a)[0] = (uint8_t)((x) >> 8), (a)[1] = (uint8_t)(x))
++#define htobe32a(a, x) (htobe16a((a), (uint32_t)(x) >> 16), htobe16a((a) + 2, (uint32_t)(x)))
++#define htobe64a(a, x) (htobe32a((a), (uint64_t)(x) >> 32), htobe32a((a) + 4, (uint64_t)(x)))
++#define htole16a(a, x) ((a)[1] = (uint8_t)((x) >> 8), (a)[0] = (uint8_t)(x))
++#define htole32a(a, x) (htole16a((a), (uint32_t)(x)), htole16a((a) + 2, (uint32_t)(x) >> 16))
++#define htole64a(a, x) (htole32a((a), (uint64_t)(x)), htole32a((a) + 4, (uint64_t)(x) >> 32))
++
++#endif
+diff --git a/libgphoto2/gphoto2-abilities-list.c b/libgphoto2/gphoto2-abilities-list.c
+index 688e47b3a..bb12134fd 100644
+--- a/libgphoto2/gphoto2-abilities-list.c
++++ b/libgphoto2/gphoto2-abilities-list.c
+@@ -34,6 +34,10 @@
+ #define GP_MODULE "gphoto2-abilities-list"
+ #define GP_LOG_DOMAIN "gphoto2-abilities-list"
+ 
++#ifndef CAMLIBS
++#define CAMLIBS "lib/darktable/libgphoto2/2.5.33"
++#endif
++
+ /**
+  * \brief Append all entries from a \c CameraAbilitiesList to another.
+  *
