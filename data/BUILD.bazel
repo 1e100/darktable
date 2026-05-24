@@ -1,3 +1,5 @@
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
@@ -7,21 +9,85 @@ exports_files([
     "org.darktable.darktable.desktop.in",
 ])
 
-filegroup(name = "darktableconfig_xml_in", srcs = ["darktableconfig.xml.in"])
-filegroup(name = "darktableconfig_dtd", srcs = ["darktableconfig.dtd"])
+filegroup(
+    name = "darktableconfig_xml_in",
+    srcs = ["darktableconfig.xml.in"],
+)
+
+filegroup(
+    name = "darktableconfig_dtd",
+    srcs = ["darktableconfig.dtd"],
+)
+
+DESKTOP_MIME_TYPES = ";".join([
+    "image/avif",
+    "image/x-canon-cr3",
+    "image/x-exr",
+    "image/aces",
+    "image/heif",
+    "image/heic",
+    "image/hej2k",
+    "image/avci",
+    "image/jp2",
+    "image/jxl",
+    "image/webp",
+    "image/qoi",
+    "image/fits",
+]) + ";"
+
+genrule(
+    name = "desktop_file_configured",
+    srcs = ["org.darktable.darktable.desktop.in"],
+    outs = ["org.darktable.darktable.desktop.configured.in"],
+    cmd = "sed -e 's|$${CMAKE_INSTALL_PREFIX}|/usr|g' -e 's|$${DESKTOP_MIME_TYPES}|%s|g' $(location org.darktable.darktable.desktop.in) > $@" % DESKTOP_MIME_TYPES,
+)
 
 genrule(
     name = "desktop_file",
-    srcs = ["org.darktable.darktable.desktop.in"],
+    srcs = [
+        ":desktop_file_configured",
+        "//po:translations",
+    ],
     outs = ["org.darktable.darktable.desktop"],
-    cmd = "sed -e 's/^_GenericName=/GenericName=/' -e 's/^_Comment=/Comment=/' -e 's/^_Keywords=/Keywords=/' -e 's|$${CMAKE_INSTALL_PREFIX}|/usr|g' -e 's|$${DESKTOP_MIME_TYPES}||g' $(location org.darktable.darktable.desktop.in) > $@",
+    cmd = "\n".join([
+        "set -eu",
+        "if command -v intltool-merge >/dev/null; then",
+        "  intltool-merge --desktop-style po $(location :desktop_file_configured) $@",
+        "else",
+        "  sed -e 's/^_GenericName=/GenericName=/' -e 's/^_Comment=/Comment=/' -e 's/^_Keywords=/Keywords=/' $(location :desktop_file_configured) > $@",
+        "fi",
+    ]),
 )
 
 genrule(
     name = "appdata_file",
-    srcs = ["org.darktable.darktable.appdata.xml.in"],
+    srcs = [
+        "org.darktable.darktable.appdata.xml.in",
+        "//po:translations",
+    ],
     outs = ["org.darktable.darktable.appdata.xml"],
-    cmd = "sed -e 's/<_\\([a-zA-Z][^ >]*\\)/<\\1/g' -e 's|</_\\([a-zA-Z][^>]*\\)>|</\\1>|g' $(location org.darktable.darktable.appdata.xml.in) > $@",
+    cmd = "\n".join([
+        "set -eu",
+        "if command -v intltool-merge >/dev/null; then",
+        "  intltool-merge --xml-style po $(location org.darktable.darktable.appdata.xml.in) $@",
+        "else",
+        "  sed -e 's/<_\\([a-zA-Z][^ >]*\\)/<\\1/g' -e 's|</_\\([a-zA-Z][^>]*\\)>|</\\1>|g' $(location org.darktable.darktable.appdata.xml.in) > $@",
+        "fi",
+    ]),
+)
+
+sh_test(
+    name = "validate_desktop_file",
+    srcs = ["validate_desktop_file.sh"],
+    args = ["$(location :desktop_file)"],
+    data = [":desktop_file"],
+)
+
+sh_test(
+    name = "validate_appdata_file",
+    srcs = ["validate_appdata_file.sh"],
+    args = ["$(location :appdata_file)"],
+    data = [":appdata_file"],
 )
 
 filegroup(

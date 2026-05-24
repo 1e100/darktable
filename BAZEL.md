@@ -82,8 +82,10 @@ This produces `bazel-bin/src/darktable-runtime`, with:
 - `share/darktable/` containing runtime data, generated `darktablerc`,
   generated `darktableconfig.xml`, RawSpeed camera data, Lua scripts, OpenCL
   kernels, styles, themes, watermarks, pixmaps, and helper scripts.
-- Minimal unlocalized desktop/appstream metadata under `share/applications`
-  and `share/metainfo`.
+- Desktop/appstream metadata under `share/applications` and `share/metainfo`.
+  If `intltool-merge` is installed, Bazel merges translations from `po/*.po`;
+  otherwise those targets fall back to unlocalized metadata so ordinary runtime
+  builds continue to work on lean developer machines.
 - An empty `share/locale` directory so binaries can resolve their configured
   locale path even before translation catalogs are modeled.
 
@@ -94,6 +96,50 @@ The launcher in the runtime tree passes `--moduledir`, `--datadir`, and
 ```sh
 bazel-bin/src/darktable-runtime/bin/darktable-bazel --version
 ```
+
+## Install And Snap Packaging
+
+The install/package milestone builds on the runtime tree instead of duplicating
+its layout logic. Build the package-shaped install tar with:
+
+```sh
+bazel build --config=linux //packaging:darktable_install_tar
+```
+
+This produces `bazel-bin/packaging/darktable-install.tar`, with the runtime
+tree installed under `/usr`, plus `AUTHORS`, `LICENSE`, English manpages, and
+translated German/French/Spanish manpages. Translated manpage generation uses
+`po4a-translate`; `install_deps.sh` installs the required `po4a` package.
+
+The Snap payload target adds the Snap-specific launcher:
+
+```sh
+bazel build --config=linux //packaging:darktable_snap_payload_tar
+```
+
+Then build the experimental classic-confined Snap from the repository root:
+
+```sh
+snapcraft pack
+sudo snap install --dangerous --classic darktable_*.snap
+darktable --version
+```
+
+If LXD is not initialized for Snapcraft builds, the local developer fallback is:
+
+```sh
+snapcraft pack --destructive-mode
+```
+
+`snap/snapcraft.yaml` uses `base: core24`, `confinement: classic`, and
+Snapcraft's `dump` plugin over
+`bazel-bin/packaging/darktable-snap-payload.tar`. The Snap is intentionally
+classic-confined for this milestone because darktable integrates with broad
+desktop, filesystem, camera, color-management, print, and GPU surfaces. Store
+publication would still need classic confinement review.
+
+The Snap does not enable optional AI. Build the AI runtime separately with
+`--//bazel/config:enable_ai=true` until ONNXRuntime packaging is modeled.
 
 The runtime tree also has a non-GUI smoke test:
 
@@ -320,7 +366,9 @@ basic error paths.
 `MODULE.bazel` is the top-level dependency declaration. It uses:
 
 - `rules_cc` for C/C++ rules.
-- `rules_pkg` for future packaging work.
+- `rules_pkg` for future distro package formats. The current install tar uses
+  a small repository-local tree/tar rule because it repackages the existing
+  runtime tree artifact directly.
 - `rules_shell` for shell smoke tests.
 - `googletest` for C++ smoke and unit test runners.
 - Bazel Central Registry modules for migrated leaf libraries: `zlib`,
@@ -689,8 +737,9 @@ The Bazel build is not a replacement for the full CMake build yet. Known gaps:
 - Only Linux is currently configured.
 - macOS support needs a platform configuration, framework handling, and
   replacements for Linux-specific feature probes and link options.
-- `bazel_runtime_tree` is a runnable tree, not a distro package or system
-  installation target.
+- `bazel_runtime_tree` is a runnable tree. `//packaging:darktable_install_tar`
+  is the first package-shaped install artifact, but it is not a distro package
+  manager integration yet.
 - AI is modeled as an optional Linux feature. Full AI parity depends on a local
   ONNXRuntime install and the `--//bazel/config:enable_ai=true` flag.
 - Generated feature config is driven by explicit platform maps rather than live
@@ -702,8 +751,9 @@ The Bazel build is not a replacement for the full CMake build yet. Known gaps:
   incomplete.
 - Several non-leaf or broader libraries still come from `pkg-config` and system
   packages.
-- Translated desktop/appstream metadata, manpages, documentation, and package
-  artifacts are not modeled.
+- Translated desktop/appstream metadata and manpages are modeled. Broader
+  generated documentation and distro-native packages beyond the experimental
+  classic Snap are not modeled yet.
 - PortMidi is not modeled in the base Linux plugin milestone because this host
   does not provide `portmidi.h`, `libportmidi`, or `portmidi.pc`; CMake would
   also skip the MIDI plugin in that environment.

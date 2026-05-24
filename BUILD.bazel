@@ -1,6 +1,9 @@
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["AUTHORS"])
+exports_files([
+    "AUTHORS",
+    "LICENSE",
+])
 
 filegroup(
     name = "source_archive_inputs",

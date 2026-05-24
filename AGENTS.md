@@ -85,6 +85,8 @@ bazel build --config=linux //third_party/...
 bazel build --config=linux //src:bazel_plugin_milestone
 bazel build --config=linux //src:bazel_plugin_runtime_layout
 bazel build --config=linux //src:bazel_runtime_tree
+bazel build --config=linux //packaging:darktable_install_tar
+bazel build --config=linux //packaging:darktable_snap_payload_tar
 ```
 
 The runnable Bazel launcher is:
@@ -92,6 +94,13 @@ The runnable Bazel launcher is:
 ```sh
 bazel-bin/src/darktable-runtime/bin/darktable-bazel --version
 ```
+
+The packaging milestone is rooted in `packaging/`. `darktable_install_tar`
+repackages the Bazel runtime tree under `/usr` and adds docs/manpages.
+`darktable_snap_payload_tar` adds the Snap wrapper consumed by
+`snap/snapcraft.yaml`. Snap packaging is currently an experimental
+classic-confined developer artifact using `base: core24`; run `snapcraft pack`
+from the repository root after building the Snap payload tar.
 
 For a sandbox verification rebuild:
 
@@ -126,6 +135,12 @@ bazel build --config=linux --copt=-DDT_BAZEL_SANDBOX_VERIFY //src:bazel_build_mi
   `CORE_IMAGEIO_DEPS`, `CORE_RAW_DEPS`, `CORE_CAMERA_DEPS`, and
   `CORE_PRINT_DEPS`; add migrated leaf deps to the narrowest coherent bundle or
   target-specific `deps` instead of recreating a broad core dependency list.
+- `data/BUILD.bazel` owns Bazel-generated desktop/appstream metadata. It uses
+  `intltool-merge` when available and falls back to unlocalized metadata for
+  lean runtime builds.
+- `doc/man/BUILD.bazel` owns POD-to-manpage generation. Translated manpages
+  intentionally require `po4a-translate`, provided by the Ubuntu `po4a`
+  package in `install_deps.sh`.
 
 The transitional `pkg_config_repository` exposes a single `:pkg` target per
 repository. It shells out to `pkg-config`, splits compiler and linker flags, and
@@ -275,8 +290,10 @@ Optional desktop/system feature probes include:
 - Add macOS support.
 - Add Bazel test coverage for unit tests, integration tests where practical,
   and runtime-tree smoke tests using both `--moduledir` and `--datadir`.
-- Add install/package artifacts after the functional runtime tree settles.
-- Model translated desktop/appstream metadata, manpages, and generated docs.
+- Extend install/package artifacts beyond the current tar and experimental
+  classic Snap into distro-native packages if needed.
+- Model broader generated documentation beyond the current authors/license and
+  manpage coverage.
 
 ## Verification Expectations
 

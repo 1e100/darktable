@@ -18,22 +18,51 @@ exports_files([
     "introspection/parser.pm",
     "introspection/parser.pl",
     "introspection/scanner.pm",
+    "makeman.sh",
     "noise/darktable-gen-noiseprofile",
     "noise/noiseprofile.c",
     "noise/profiling-shot.xmp",
     "noise/subr.sh",
 ])
 
-filegroup(name = "authors_h", srcs = ["authors_h.sh"])
-filegroup(name = "create_version_c", srcs = [
-    "create_version_c.sh",
-    "get_last_commit_year.sh",
-])
-filegroup(name = "create_version_c_script", srcs = ["create_version_c.sh"])
-filegroup(name = "generate_darktablerc_conf_xsl", srcs = ["generate_darktablerc_conf.xsl"])
-filegroup(name = "generate_darktablerc_xsl", srcs = ["generate_darktablerc.xsl"])
-filegroup(name = "generate_prefs_xsl", srcs = ["generate_prefs.xsl"])
-filegroup(name = "generate_styles_string", srcs = ["generate_styles_string.sh"])
+filegroup(
+    name = "authors_h",
+    srcs = ["authors_h.sh"],
+)
+
+filegroup(
+    name = "create_version_c",
+    srcs = [
+        "create_version_c.sh",
+        "get_last_commit_year.sh",
+    ],
+)
+
+filegroup(
+    name = "create_version_c_script",
+    srcs = ["create_version_c.sh"],
+)
+
+filegroup(
+    name = "generate_darktablerc_conf_xsl",
+    srcs = ["generate_darktablerc_conf.xsl"],
+)
+
+filegroup(
+    name = "generate_darktablerc_xsl",
+    srcs = ["generate_darktablerc.xsl"],
+)
+
+filegroup(
+    name = "generate_prefs_xsl",
+    srcs = ["generate_prefs.xsl"],
+)
+
+filegroup(
+    name = "generate_styles_string",
+    srcs = ["generate_styles_string.sh"],
+)
+
 filegroup(
     name = "runtime_tools",
     srcs = [
@@ -74,8 +103,8 @@ filegroup(
     srcs = [
         "introspection/ast.pm",
         "introspection/code_gen.pm",
-        "introspection/parser.pm",
         "introspection/parser.pl",
+        "introspection/parser.pm",
         "introspection/scanner.pm",
     ],
 )
