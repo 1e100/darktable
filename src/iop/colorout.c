@@ -43,7 +43,7 @@
 #define DT_IOP_COLOR_ICC_LEN 512
 #define LUT_SAMPLES 0x10000
 
-DT_MODULE_INTROSPECTION(5, dt_iop_colorout_params_t)
+DT_MODULE_INTROSPECTION(6, dt_iop_colorout_params_t)
 
 typedef struct dt_iop_colorout_data_t
 {
@@ -222,6 +222,20 @@ int legacy_params(dt_iop_module_t *self,
     return 0;
   }
 
+  if(old_version == 5)
+  {
+    // DT_INTROSPECTION_TYPE_OPAQUE fields zero-initialise to DT_COLORSPACE_FILE (0)
+    // instead of the $DEFAULT annotation value (DT_COLORSPACE_SRGB).
+    dt_iop_colorout_params_t *new = malloc(sizeof(dt_iop_colorout_params_t));
+    memcpy(new, old_params, sizeof(*new));
+    if(new->type == DT_COLORSPACE_FILE && !new->filename[0])
+      new->type = DT_COLORSPACE_SRGB;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorout_params_t);
+    *new_version = 6;
+    return 0;
+  }
   return 1;
 #undef DT_IOP_COLOR_ICC_LEN_V4
 }
@@ -806,6 +820,12 @@ void gui_update(dt_iop_module_t *self)
 void init(dt_iop_module_t *self)
 {
   dt_iop_default_init(self);
+
+  // DT_INTROSPECTION_TYPE_OPAQUE zeros type to DT_COLORSPACE_FILE (0); apply the
+  // $DEFAULT annotation value explicitly.
+  dt_iop_colorout_params_t *d = self->default_params;
+  d->type = DT_COLORSPACE_SRGB;
+  d->intent = DT_INTENT_PERCEPTUAL;
 
   self->hide_enable_button = TRUE;
   self->default_enabled = TRUE;

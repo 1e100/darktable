@@ -55,7 +55,7 @@
 
 #define LUT_SAMPLES 0x10000
 
-DT_MODULE_INTROSPECTION(7, dt_iop_colorin_params_t)
+DT_MODULE_INTROSPECTION(8, dt_iop_colorin_params_t)
 
 static void update_profile_list(dt_iop_module_t *self);
 
@@ -465,6 +465,21 @@ int legacy_params(dt_iop_module_t *self,
     *new_params = new;
     *new_params_size = sizeof(dt_iop_colorin_params_v7_t);
     *new_version = 7;
+    return 0;
+  }
+  if(old_version == 7)
+  {
+    // The structure is identical to v7, but DT_INTROSPECTION_TYPE_OPAQUE fields
+    // were zero-initialised (type_work = DT_COLORSPACE_FILE = 0, filename_work = "")
+    // instead of using the $DEFAULT annotation value (DT_COLORSPACE_LIN_REC2020).
+    // Re-run _resolve_work_profile to fix any such entries.
+    dt_iop_colorin_params_t *new = malloc(sizeof(dt_iop_colorin_params_t));
+    memcpy(new, old_params, sizeof(*new));
+    _resolve_work_profile(&new->type_work, new->filename_work);
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorin_params_t);
+    *new_version = 8;
     return 0;
   }
   return 1;
@@ -1914,6 +1929,11 @@ corrupted_profile:
     d->type = DT_COLORSPACE_SRGB;
 
   dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
+
+  // DT_INTROSPECTION_TYPE_OPAQUE fields are zero-initialised, so type_work defaults to
+  // DT_COLORSPACE_FILE (0) rather than the $DEFAULT annotation value.  Set it explicitly.
+  d->type_work = DT_COLORSPACE_LIN_REC2020;
+  d->filename_work[0] = '\0';
 
   update_profile_list(self);
 }
