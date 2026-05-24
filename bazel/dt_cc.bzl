@@ -46,6 +46,7 @@ def dt_plugin_module(
         deps,
         copts,
         includes,
+        link_deps = [],
         output_name = None,
         linkopts = [],
         textual_hdrs = []):
@@ -62,7 +63,7 @@ def dt_plugin_module(
     cc_binary(
         name = _plugin_target_name(name, output_name),
         srcs = [],
-        deps = [":%s_plugin_objects" % name],
+        deps = [":%s_plugin_objects" % name] + link_deps,
         linkopts = linkopts + [
             "-shared",
             "-Wl,--unresolved-symbols=ignore-in-shared-libs",
@@ -81,6 +82,7 @@ def dt_iop_module(
         copts,
         includes,
         extra_srcs = [],
+        link_deps = [],
         output_name = None,
         linkopts = []):
     generated = "introspection/%s/%s" % (name, src)
@@ -104,6 +106,7 @@ def dt_iop_module(
             "iop/iop_api.h",
         ],
         includes = includes,
+        link_deps = link_deps,
         output_name = output_name,
         linkopts = linkopts,
     )
@@ -113,38 +116,50 @@ def _module_extra_deps(module, index):
         return module[index]
     return []
 
-def dt_iop_modules(modules, deps, copts, includes, linkopts = []):
+def _unique(values):
+    seen = {}
+    result = []
+    for value in values:
+        if value not in seen:
+            seen[value] = True
+            result.append(value)
+    return result
+
+def dt_iop_modules(modules, deps, copts, includes, link_deps = [], linkopts = []):
     for module in modules:
         dt_iop_module(
             name = module[0],
             src = module[1],
             extra_srcs = module[2] + _module_extra_deps(module, 4),
-            deps = deps + _module_extra_deps(module, 3) + _module_extra_deps(module, 5),
+            deps = _unique(deps + _module_extra_deps(module, 3) + _module_extra_deps(module, 5)),
             copts = copts,
             includes = includes,
+            link_deps = link_deps,
             linkopts = linkopts,
         )
 
-def dt_plugin_modules(modules, deps, copts, includes, linkopts = []):
+def dt_plugin_modules(modules, deps, copts, includes, link_deps = [], linkopts = []):
     for module in modules:
         dt_plugin_module(
             name = module[0],
             srcs = module[1],
-            deps = deps + _module_extra_deps(module, 2),
+            deps = _unique(deps + _module_extra_deps(module, 2)),
             copts = copts,
             includes = includes,
+            link_deps = link_deps,
             linkopts = linkopts,
         )
 
-def dt_output_plugin_modules(modules, deps, copts, includes, linkopts = []):
+def dt_output_plugin_modules(modules, deps, copts, includes, link_deps = [], linkopts = []):
     for module in modules:
         dt_plugin_module(
             name = module[0],
             output_name = module[1],
             srcs = module[2],
-            deps = deps + module[3],
+            deps = _unique(deps + module[3]),
             copts = copts,
             includes = includes,
+            link_deps = link_deps,
             linkopts = linkopts,
         )
 

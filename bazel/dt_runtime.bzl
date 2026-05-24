@@ -1,5 +1,14 @@
 def _runtime_tree_impl(ctx):
     out = ctx.actions.declare_directory(ctx.attr.dirname)
+    runtime_files = []
+    seen_runtime_files = {}
+
+    for target in ctx.attr.srcs:
+        if DefaultInfo in target:
+            for file in target[DefaultInfo].default_runfiles.files.to_list():
+                if file.path not in seen_runtime_files:
+                    seen_runtime_files[file.path] = True
+                    runtime_files.append(file)
 
     commands = [
         "set -eu",
@@ -11,6 +20,21 @@ def _runtime_tree_impl(ctx):
     ]
 
     for src, dest in zip(ctx.files.srcs, ctx.attr.dests):
+        commands.append("mkdir -p \"$root/%s\"" % dest.rpartition("/")[0])
+        commands.append("cp -L '%s' \"$root/%s\"" % (src.path, dest))
+
+    for src in runtime_files:
+        parts = src.short_path.split("/")
+        solib_index = -1
+        for index, part in enumerate(parts):
+            if part.startswith("_solib_"):
+                solib_index = index
+                break
+        if solib_index < 0:
+            continue
+        dest = "lib/darktable/bazel-solib/" + "/".join(parts[solib_index + 1:])
+        if dest.endswith("/libdarktable.so"):
+            continue
         commands.append("mkdir -p \"$root/%s\"" % dest.rpartition("/")[0])
         commands.append("cp -L '%s' \"$root/%s\"" % (src.path, dest))
 
@@ -45,7 +69,7 @@ def _runtime_tree_impl(ctx):
     ])
 
     ctx.actions.run_shell(
-        inputs = ctx.files.srcs + ctx.files.data,
+        inputs = ctx.files.srcs + ctx.files.data + runtime_files,
         outputs = [out],
         command = "\n".join(commands),
         mnemonic = "DarktableRuntimeTree",

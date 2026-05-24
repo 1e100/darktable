@@ -336,14 +336,12 @@ remaining optional ImageMagick path is the only ImageMagick-family fallback for
 miscellaneous LDR imports and non-JPEG embedded thumbnails.
 
 Plugin dependencies are now expressed in smaller buckets. `PLUGIN_DEPS` contains
-the common plugin API and GTK/Lua/system boundary dependencies, while individual
-imageio, storage, lighttable, and iop plugin entries add the leaf libraries they
-include directly, such as JPEG, PNG, TIFF, JPEG XL, HEIF, WebP, OpenEXR,
-OpenJPEG, AVIF, Lensfun, libxml2, and curl. This improves BUILD-file ownership
-and makes future pruning easier. It is not yet a complete link-graph
-deduplication because plugin `.so` targets still depend on
-`darktable_core_compile`; replacing that with a usable `libdarktable.so` API
-link remains a separate milestone.
+the common plugin compile-time API surface, `PLUGIN_LINK_DEPS` links plugins to
+the runtime `libdarktable.so` ABI, and individual imageio, storage, lighttable,
+and iop plugin entries add the leaf libraries they include directly, such as
+JPEG, PNG, TIFF, JPEG XL, HEIF, WebP, OpenEXR, OpenJPEG, AVIF, Lensfun,
+libxml2, and curl. Plugins no longer link the full `darktable_core_compile`
+aggregate directly.
 
 ## pkg-config Rule
 
@@ -416,8 +414,9 @@ localized:
 - `darktable_lua`
 - `darktable_pwstorage`
 
-`darktable_core_compile` joins those libraries and the generated version source
-into the shared core used by the milestone binaries.
+`darktable_core_compile` joins those libraries and the generated version source.
+`libdarktable.so` aggregates that compile graph into the runtime shared core,
+and plugins link against a `cc_import` wrapper for that shared library.
 
 The plugin shared libraries are built and laid out by category:
 
@@ -437,7 +436,12 @@ The corresponding runtime layout targets are:
 
 `bazel/dt_runtime.bzl` assembles the fuller runtime tree. It deliberately uses
 a functional Bazel layout rather than trying to mirror every CMake install
-destination exactly.
+destination exactly. It also copies Bazel runfile shared libraries from Bazel's
+configuration-specific `_solib_*` directory into the stable arranged path
+`lib/darktable/bazel-solib` so plugin `.so` files can resolve their Bazel helper
+and external-library dependencies from the arranged runtime tree. The arranged
+`lib/darktable/libdarktable.so` remains the plugin-facing core library; the
+runtime-tree copy intentionally skips Bazel's solib symlink for that file.
 
 IOP plugins are compiled from generated introspection sources produced by
 `tools/introspection/parser.pl`, matching the CMake module pattern. Generic

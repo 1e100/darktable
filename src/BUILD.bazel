@@ -1,7 +1,7 @@
 load("//bazel:darktable_gen.bzl", "darktable_generated_headers")
 load("//bazel:dt_cc.bzl", "dt_core_lib", "dt_iop_modules", "dt_output_plugin_modules", "dt_plugin_group", "dt_plugin_modules", "dt_plugin_runtime_layout")
 load("//bazel:dt_runtime.bzl", "dt_runtime_tree")
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_import", "cc_library")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -561,8 +561,13 @@ cc_binary(
         "-Wl,-rpath,$$ORIGIN",
     ],
     linkshared = True,
-    linkstatic = False,
+    linkstatic = True,
     deps = [":darktable_core_compile"],
+)
+
+cc_import(
+    name = "darktable_shared",
+    shared_library = ":libdarktable.so",
 )
 
 cc_binary(
@@ -625,14 +630,24 @@ cc_binary(
 )
 
 PLUGIN_DEPS = [
-    ":darktable_core_compile",
-    ":darktable_plugin_headers",
-    "//third_party/lcms2:lcms2",
-    "//third_party/sqlite:sqlite",
-    ":potrace_system",
-    "@gtk_stack//:pkg",
-    "@lautoc//:lautoc",
-    "@lua_internal//:lua",
+    ":darktable_plugin_compile_deps",
+]
+
+cc_library(
+    name = "darktable_plugin_compile_deps",
+    deps = [
+        ":darktable_plugin_headers",
+        ":potrace_system",
+        "//third_party/lcms2:lcms2",
+        "//third_party/sqlite:sqlite",
+        "@gtk_stack//:pkg",
+        "@lautoc//:lautoc",
+        "@lua_internal//:lua",
+    ] + LINUX_DESKTOP_MAP_DEPS,
+)
+
+PLUGIN_LINK_DEPS = [
+    ":darktable_shared",
 ]
 
 IOP_PLUGINS = [
@@ -736,7 +751,11 @@ dt_iop_modules(
     copts = COMMON_COPTS,
     includes = PLUGIN_INCLUDES,
     deps = PLUGIN_DEPS,
-    linkopts = ["-Wl,-rpath,$$ORIGIN/.."],
+    link_deps = PLUGIN_LINK_DEPS,
+    linkopts = [
+        "-Wl,-rpath,$$ORIGIN/..",
+        "-Wl,-rpath,$$ORIGIN/../bazel-solib",
+    ],
 )
 
 dt_plugin_group(
@@ -767,7 +786,11 @@ dt_plugin_modules(
     ],
     includes = PLUGIN_INCLUDES,
     deps = PLUGIN_DEPS,
-    linkopts = ["-Wl,-rpath,$$ORIGIN/.."],
+    link_deps = PLUGIN_LINK_DEPS,
+    linkopts = [
+        "-Wl,-rpath,$$ORIGIN/..",
+        "-Wl,-rpath,$$ORIGIN/../bazel-solib",
+    ],
 )
 
 dt_plugin_group(
@@ -838,7 +861,11 @@ dt_plugin_modules(
     ],
     includes = PLUGIN_INCLUDES,
     deps = PLUGIN_DEPS,
-    linkopts = ["-Wl,-rpath,$$ORIGIN/../.."],
+    link_deps = PLUGIN_LINK_DEPS,
+    linkopts = [
+        "-Wl,-rpath,$$ORIGIN/../..",
+        "-Wl,-rpath,$$ORIGIN/../../bazel-solib",
+    ],
 )
 
 dt_plugin_group(
@@ -890,7 +917,11 @@ dt_output_plugin_modules(
     ],
     includes = PLUGIN_INCLUDES,
     deps = PLUGIN_DEPS,
-    linkopts = ["-Wl,-rpath,$$ORIGIN/../../.."],
+    link_deps = PLUGIN_LINK_DEPS,
+    linkopts = [
+        "-Wl,-rpath,$$ORIGIN/../../..",
+        "-Wl,-rpath,$$ORIGIN/../../../bazel-solib",
+    ],
 )
 
 dt_plugin_group(
@@ -920,7 +951,11 @@ dt_plugin_modules(
     ],
     includes = PLUGIN_INCLUDES,
     deps = PLUGIN_DEPS,
-    linkopts = ["-Wl,-rpath,$$ORIGIN/../../.."],
+    link_deps = PLUGIN_LINK_DEPS,
+    linkopts = [
+        "-Wl,-rpath,$$ORIGIN/../../..",
+        "-Wl,-rpath,$$ORIGIN/../../../bazel-solib",
+    ],
 )
 
 dt_plugin_group(

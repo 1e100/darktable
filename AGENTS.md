@@ -67,6 +67,8 @@ The Bazel runtime tree must preserve darktable's loader expectations:
 - image I/O plugins under `lib/darktable/plugins/imageio/{format,storage}/`
 - runtime data under `share/darktable/`
 - locale files under `share/locale/`
+- Bazel runfile shared libraries under `lib/darktable/bazel-solib/` for plugin
+  dependencies that still use Bazel-generated shared object names
 
 ## Bazel Entry Points
 
@@ -228,11 +230,10 @@ Optional desktop/system feature probes include:
 - GraphicsMagick support was intentionally removed rather than migrated. Do not
   reintroduce it; use the optional ImageMagick path for miscellaneous LDR
   fallback imports if that feature is intentionally enabled.
-- Finish plugin link-graph cleanup. Plugin deps are split by plugin family and
-  by direct codec/header usage, but plugins still depend on
-  `darktable_core_compile`; replacing that edge with a correct shared
-  `libdarktable.so` API link requires making that shared library export the
-  symbols used by the binaries and modules.
+- Continue plugin/runtime cleanup. Plugins now link against `libdarktable.so`
+  instead of `darktable_core_compile`, but Bazel still emits per-plugin object
+  helper shared libraries and runtime smoke coverage does not yet exercise
+  actual module loading.
 - The Linux Bazel configuration models map/OSMGpsMap, print/CUPS,
   colord/colord-gtk, libsecret, and GMIC compressed LUTs as system
   dependencies. Remaining fuller feature parity work includes ImageMagick,
