@@ -51,6 +51,7 @@ cc_library(
     copts = [
         "-w",
         "-Wno-error",
+        "-fopenmp",
     ],
     includes = [
         ".",
@@ -58,7 +59,10 @@ cc_library(
         "src/librawspeed",
         "src/external",
     ],
-    linkopts = ["-lm"],
+    linkopts = [
+        "-lm",
+        "-fopenmp",
+    ],
     deps = [
         "@//third_party/jpeg:jpeg",
         "@//third_party/pugixml:pugixml",

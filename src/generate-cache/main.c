@@ -49,13 +49,14 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mip
   fprintf(stderr, _("creating cache directories\n"));
   for(dt_mipmap_size_t k = min_mip; k <= max_mip; k++)
   {
-    char dirname[PATH_MAX] = { 0 };
-    snprintf(dirname, sizeof(dirname), "%s.d/%d", darktable.mipmap_cache->cachedir, k);
+    char *dirname = g_strdup_printf("%s.d/%d", darktable.mipmap_cache->cachedir, k);
 
     fprintf(stderr, _("creating cache directory '%s'\n"), dirname);
-    if(g_mkdir_with_parents(dirname, 0750))
+    const int mkdir_res = g_mkdir_with_parents(dirname, 0750);
+    g_free(dirname);
+    if(mkdir_res)
     {
-      fprintf(stderr, _("could not create directory '%s'!\n"), dirname);
+      fprintf(stderr, _("could not create directory '%s'\n"), darktable.mipmap_cache->cachedir);
       return 1;
     }
   }
