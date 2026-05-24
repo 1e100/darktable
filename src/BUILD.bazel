@@ -1146,6 +1146,22 @@ cc_test(
     linkopts = ["-ldl"],
 )
 
+cc_test(
+    name = "bazel_plugin_init_smoke_test",
+    srcs = ["bazel_plugin_init_smoke_test.cc"],
+    args = ["$(rootpath :bazel_runtime_tree)"],
+    copts = COMMON_COPTS,
+    data = [":bazel_runtime_tree"],
+    includes = COMMON_INCLUDES,
+    linkopts = ["-Wl,-rpath,$$ORIGIN/../lib/darktable"],
+    size = "small",
+    deps = [
+        ":darktable_public_headers",
+        ":darktable_shared",
+        "@googletest//:gtest",
+    ],
+)
+
 filegroup(
     name = "iop_module_sources",
     srcs = glob(["iop/*.[ch]", "iop/*.cc", "iop/demosaicing/*"], allow_empty = True),

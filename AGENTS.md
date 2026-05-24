@@ -235,8 +235,10 @@ Optional desktop/system feature probes include:
 - Continue plugin/runtime cleanup. Plugins now link against `libdarktable.so`
   instead of `darktable_core_compile`, and `bazel_plugin_load_smoke_test`
   exercises headless `dlopen()` plus required API symbol checks across the
-  arranged plugin tree. Remaining coverage should initialize representative
-  plugin classes through real darktable code paths.
+  arranged plugin tree. `bazel_plugin_init_smoke_test` is a gtest fixture that
+  runs real non-GUI `dt_init()` against the Bazel runtime tree and verifies
+  initialized image I/O and IOP module registries. Remaining coverage should
+  move upward into CLI workflows and carefully bounded GUI/view initialization.
 - The Linux Bazel configuration models map/OSMGpsMap, print/CUPS,
   colord/colord-gtk, libsecret, and GMIC compressed LUTs as system
   dependencies. Remaining fuller feature parity work includes ImageMagick,
@@ -248,8 +250,7 @@ Optional desktop/system feature probes include:
   appropriate, especially before introducing macOS support.
 - Add macOS support.
 - Add Bazel test coverage for unit tests, integration tests where practical,
-  plugin initialization smoke tests, and runtime-tree smoke tests using both
-  `--moduledir` and `--datadir`.
+  and runtime-tree smoke tests using both `--moduledir` and `--datadir`.
 - Add install/package artifacts after the functional runtime tree settles.
 - Model translated desktop/appstream metadata, manpages, and generated docs.
 
@@ -269,6 +270,7 @@ For runtime-layout changes, also run:
 bazel build --config=linux //src:bazel_runtime_tree
 bazel test --config=linux //src:bazel_runtime_smoke_test
 bazel test --config=linux //src:bazel_plugin_load_smoke_test
+bazel test --config=linux //src:bazel_plugin_init_smoke_test
 bazel test --config=linux //src:bazel_sqliteicu_smoke_test
 bazel-bin/src/darktable-runtime/bin/darktable-bazel --version
 ```

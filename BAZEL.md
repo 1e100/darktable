@@ -110,6 +110,20 @@ API symbols for each plugin class. It is intentionally headless: it validates
 runtime linkability and module exports, but does not initialize plugin GUI
 state.
 
+Plugin initialization has a separate gtest smoke test:
+
+```sh
+bazel test --config=linux //src:bazel_plugin_init_smoke_test
+```
+
+This test starts darktable through the same non-GUI `dt_init()` path used by
+CLI tools, points `--moduledir`, `--datadir`, and `--localedir` at the Bazel
+runtime tree, and uses isolated config/cache/data directories under
+`TEST_TMPDIR`. The fixture initializes darktable once, then checks that the
+runtime tree's image I/O format plugins, image I/O storage plugins, and IOP
+plugins are present in darktable's module registries with their required API
+callbacks wired. It intentionally stops before GUI/view initialization.
+
 SQLite ICU integration has a narrower smoke test:
 
 ```sh
@@ -172,6 +186,8 @@ system headers and libraries.
 - `rules_cc` for C/C++ rules.
 - `rules_pkg` for future packaging work.
 - `rules_shell` for shell smoke tests.
+- `googletest` for C++ smoke tests that need fixture-level setup around real
+  darktable process state.
 - Bazel Central Registry modules for migrated leaf libraries: `zlib`,
   `sqlite3`, `pugixml`, `brotli`, `curl`, `highway`, `libexpat`, `libpng`,
   `libjpeg_turbo`, `libxml2`, `libwebp`, `libtiff`, `libavif`, `libheif`,
@@ -248,6 +264,10 @@ them when darktable's Bazel compile define is present.
 The `openexr` BCR module is patched through `single_version_override` to compile
 `OpenEXRCore` with `_DEFAULT_SOURCE`. Darktable's global `_XOPEN_SOURCE=700`
 otherwise hides glibc's endian conversion macros from `<endian.h>`.
+
+The `googletest` BCR module is patched so its upstream BUILD file explicitly
+loads C++ rules under Bazel 9. The test dependency is used only for Bazel smoke
+tests and is not part of the darktable runtime closure.
 
 The `icu` BCR module does not expose pkg-config-like `icu-uc`, `icu-i18n`, and
 `icu-io` aliases. `//third_party/icu:icu` is a narrow aggregate over the ICU
