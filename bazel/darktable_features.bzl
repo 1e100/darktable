@@ -1,43 +1,55 @@
-LINUX_FEATURE_DEFINES = {
-    "HAVE_CPUID_H": "1",
-    "HAVE___GET_CPUID": "1",
-    "HAVE_OMP_FIRSTPRIVATE_WITH_CONST": "1",
-    "HAVE_OPENCL": "1",
-    "HAVE_LIBRAW": "1",
-    "USE_LUA": "1",
-    "HAVE_GPHOTO2": "1",
-    "HAVE_LIBJXL": "1",
-    "HAVE_WEBP": "1",
-    "HAVE_LIBAVIF": "1",
-    "HAVE_LIBHEIF": "1",
-    "HAVE_OPENEXR": "1",
-    "HAVE_OPENJPEG": "1",
-    "HAVE_ICU": "1",
-    "HAVE_MAP": "1",
-    "HAVE_OSMGPSMAP_110_OR_NEWER": "1",
-    "HAVE_OSMGPSMAP_NEWER_THAN_110": "1",
-    "USE_COLORDGTK": "1",
-    "HAVE_LIBSECRET": "1",
-    "HAVE_GMIC": "1",
-    "HAVE_PRINT": "1",
-}
+LINUX = "linux"
 
-LINUX_CONFIG_VALUES = {
-    "package_name": "darktable",
-    "package_bugreport": "https://github.com/darktable-org/darktable/issues/new/choose",
-    "package_docs": "https://www.darktable.org/resources/",
-    "gettext_package": "darktable",
-    "localedir": "../share/locale",
-    "libdir": "../lib/darktable",
-    "datadir": "../share/darktable",
-    "sharedir": "../share",
-    "shared_module_prefix": "lib",
-    "shared_module_suffix": ".so",
-    "wanted_stack_size": "2048 * 1024",
-    "wanted_threads_stack_size": "2048 * 1024",
-    "iso_codes_location": "/usr/share/iso-codes/json",
-    "iso_codes_localedir": "/usr/share/locale",
-    "cl_target_opencl_version": "300",
+PLATFORM_FEATURES = {
+    LINUX: {
+        "feature_defines": {
+            "HAVE_CPUID_H": "1",
+            "HAVE___GET_CPUID": "1",
+            "HAVE_OMP_FIRSTPRIVATE_WITH_CONST": "1",
+            "HAVE_OPENCL": "1",
+            "HAVE_LIBRAW": "1",
+            "USE_LUA": "1",
+            "HAVE_GPHOTO2": "1",
+            "HAVE_LIBJXL": "1",
+            "HAVE_WEBP": "1",
+            "HAVE_LIBAVIF": "1",
+            "HAVE_LIBHEIF": "1",
+            "HAVE_OPENEXR": "1",
+            "HAVE_OPENJPEG": "1",
+            "HAVE_ICU": "1",
+            "HAVE_MAP": "1",
+            "HAVE_OSMGPSMAP_110_OR_NEWER": "1",
+            "HAVE_OSMGPSMAP_NEWER_THAN_110": "1",
+            "USE_COLORDGTK": "1",
+            "HAVE_LIBSECRET": "1",
+            "HAVE_GMIC": "1",
+            "HAVE_PRINT": "1",
+        },
+        "config_values": {
+            "package_name": "darktable",
+            "package_bugreport": "https://github.com/darktable-org/darktable/issues/new/choose",
+            "package_docs": "https://www.darktable.org/resources/",
+            "gettext_package": "darktable",
+            "localedir": "../share/locale",
+            "libdir": "../lib/darktable",
+            "datadir": "../share/darktable",
+            "sharedir": "../share",
+            "shared_module_prefix": "lib",
+            "shared_module_suffix": ".so",
+            "wanted_stack_size": "2048 * 1024",
+            "wanted_threads_stack_size": "2048 * 1024",
+            "iso_codes_location": "/usr/share/iso-codes/json",
+            "iso_codes_localedir": "/usr/share/locale",
+            "cl_target_opencl_version": "300",
+        },
+        "darktableconfig_substitutions": {
+            "DEFCONFIG_APPLE": "false",
+            "DEFCONFIG_NONAPPLE": "true",
+            "DEFCONFIG_OPENCL": "true",
+            "DEFCONFIG_AUDIOPLAYER": "aplay",
+            "DARKTABLECONFIG_IOP_ENTRIES": "",
+        },
+    },
 }
 
 BASE_SUPPORTED_EXTENSIONS = [
@@ -103,30 +115,42 @@ def _unique_sorted(values):
         seen[value] = True
     return sorted(seen.keys())
 
-def linux_supported_extensions():
+def _platform_features(platform):
+    if platform not in PLATFORM_FEATURES:
+        fail("unsupported darktable Bazel platform feature map: %s" % platform)
+    return PLATFORM_FEATURES[platform]
+
+def supported_extensions(platform):
+    feature_defines = _platform_features(platform)["feature_defines"]
     extensions = list(BASE_SUPPORTED_EXTENSIONS)
     for feature, feature_extensions in FEATURE_SUPPORTED_EXTENSIONS.items():
-        if feature in LINUX_FEATURE_DEFINES:
+        if feature in feature_defines:
             extensions.extend(feature_extensions)
     return _unique_sorted(extensions)
 
-def linux_feature_define_lines():
+def feature_define_lines(platform):
+    platform_features = _platform_features(platform)
+    feature_defines = platform_features["feature_defines"]
+    config_values = platform_features["config_values"]
     lines = []
-    for name in sorted(LINUX_FEATURE_DEFINES.keys()):
-        lines.append("#define %s %s" % (name, LINUX_FEATURE_DEFINES[name]))
-    lines.append("#define CL_TARGET_OPENCL_VERSION %s" % LINUX_CONFIG_VALUES["cl_target_opencl_version"])
+    for name in sorted(feature_defines.keys()):
+        lines.append("#define %s %s" % (name, feature_defines[name]))
+    lines.append("#define CL_TARGET_OPENCL_VERSION %s" % config_values["cl_target_opencl_version"])
     return lines
 
-def linux_have_opencl_value():
-    return "1" if "HAVE_OPENCL" in LINUX_FEATURE_DEFINES else "0"
+def have_opencl_value(platform):
+    return "1" if "HAVE_OPENCL" in _platform_features(platform)["feature_defines"] else "0"
+
+def darktableconfig_substitutions(platform):
+    return dict(_platform_features(platform)["darktableconfig_substitutions"])
 
 def _c_string(value):
     return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
-def linux_config_h_content():
-    values = LINUX_CONFIG_VALUES
-    extensions = ", ".join([_c_string(extension) for extension in linux_supported_extensions()])
-    feature_defines = "\n".join(linux_feature_define_lines())
+def config_h_content(platform):
+    values = _platform_features(platform)["config_values"]
+    extensions = ", ".join([_c_string(extension) for extension in supported_extensions(platform)])
+    feature_defines = "\n".join(feature_define_lines(platform))
 
     return """#pragma once
 #include <stddef.h>

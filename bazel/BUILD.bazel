@@ -6,6 +6,7 @@ exports_files([
     "auxiliary_tools_smoke_test.sh",
     "cli_export_smoke_test.sh",
     "cli_runtime_variants_smoke_test.sh",
+    "config_feature_smoke_test.sh",
     "runtime_smoke_test.sh",
     "runtime_test_lib.sh",
     "sqliteicu_smoke_test.sh",

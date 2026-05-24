@@ -212,23 +212,36 @@ The root `.bazelrc` enables Bzlmod and sets common C/C++ defaults:
 - C defaults to C99.
 - `HAVE_CONFIG_H`, `_XOPEN_SOURCE=700`, and PIC are applied globally.
 
-Linux feature configuration is owned by `bazel/darktable_features.bzl`, not by
-ad hoc `--copt=-D...` entries in `.bazelrc`. That file is the current source of
-truth for:
+Bazel platform feature configuration is owned by
+`bazel/darktable_features.bzl`, not by ad hoc `--copt=-D...` entries in
+`.bazelrc`. That file is the current source of truth for:
 
 - generated `config.h` package/install constants
 - generated `config.h` feature macros
 - generated `dt_supported_extensions`
 - generated `HAVE_OPENCL` values used by preference/config header generation
+- generated `darktableconfig.xml` platform defaults
 
 The current Linux feature set enables OpenCL, LibRaw, Lua, GPhoto2, JPEG XL,
 WebP, AVIF, HEIF, OpenEXR, OpenJPEG, ICU, OpenMP, map/OSMGpsMap, colord-gtk
 display profile integration, libsecret password storage, G'MIC compressed LUT
 support, CUPS print support, and X11/Xrandr support for `darktable-cmstest`.
+Linux is currently the only supported Bazel platform feature map; unsupported
+target platforms fail intentionally instead of inheriting Linux values.
 
 The Linux desktop integrations are intentionally kept as system dependencies
 for now. `install_deps.sh` installs the development packages for those
 integrations along with the GTK desktop stack.
+
+Generated feature configuration has a narrow smoke test:
+
+```sh
+bazel test --config=linux //src:bazel_config_feature_smoke_test
+```
+
+This verifies representative Linux-owned values in generated `config.h` and
+`darktableconfig.xml`, including OpenCL, shared module suffixes, and default
+audio/OpenCL/Apple preference substitutions.
 
 Most of those integrations are modeled through `pkg-config`. CUPS and G'MIC
 are modeled through the `system_library_repository` rule because this host's
@@ -536,11 +549,12 @@ core source targets:
 These are generated with Bazel `genrule`s using existing darktable scripts and
 data files wherever practical.
 
-The generated `config.h` is produced from the explicit Linux feature map in
-`bazel/darktable_features.bzl`. This keeps feature macros, install paths, and
-extension lists in one Bazel-owned place instead of scattering configure
-results through `.bazelrc` compile flags. It is still a Linux configuration,
-not a portable configure-probe system.
+The generated `config.h` and `darktableconfig.xml` are produced from explicit
+platform maps in `bazel/darktable_features.bzl`. This keeps feature macros,
+install paths, extension lists, and generated preference defaults in one
+Bazel-owned place instead of scattering configure results through `.bazelrc`
+compile flags. It is still a static platform-map layer, not a portable
+configure-probe system.
 
 ## Source Targets
 
@@ -647,9 +661,10 @@ The Bazel build is not a replacement for the full CMake build yet. Known gaps:
   installation target.
 - AI is modeled as an optional Linux feature. Full AI parity depends on a local
   ONNXRuntime install and the `--//bazel/config:enable_ai=true` flag.
-- The generated `config.h` is driven by an explicit Linux feature map rather
-  than live configure probes. macOS and any other future platform need their own
-  platform feature maps or a principled probe layer.
+- Generated feature config is driven by explicit platform maps rather than live
+  configure probes. Linux is the only supported Bazel platform map today; macOS
+  and any other future platform need their own platform maps or a principled
+  probe layer.
 - The Linux configuration covers the map, print, colord-gtk, libsecret, and
   G'MIC feature macros, but broader optional feature parity is still
   incomplete.

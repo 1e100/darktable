@@ -13,3 +13,8 @@ config_setting(
         ":enable_ai": "true",
     },
 )
+
+config_setting(
+    name = "target_linux",
+    constraint_values = ["@platforms//os:linux"],
+)
