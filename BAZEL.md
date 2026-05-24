@@ -226,6 +226,57 @@ The Linux configuration mounts `/usr/include` and `/usr/lib/x86_64-linux-gnu`
 into the sandbox. This is required while the `pkg-config` rules refer to host
 system headers and libraries.
 
+## Optional AI Support
+
+AI support is opt-in in the Bazel build:
+
+```sh
+bazel build --config=linux --//bazel/config:enable_ai=true //src:darktable
+```
+
+The default build leaves AI disabled and does not require ONNXRuntime. With the
+flag enabled, Bazel defines `HAVE_AI` and `HAVE_AI_DOWNLOAD`, compiles
+`src/ai`, AI model registry/download code, segmentation/restore support, the AI
+preferences page, object masks, Lua AI bindings, and the `neural_restore`
+lighttable plugin.
+
+Linux ONNXRuntime is modeled as a system boundary for now. Bazel compiles
+against `onnxruntime_c_api.h`, but does not link `libonnxruntime.so` into
+`libdarktable.so`; it follows the existing Linux behavior and lazy-loads the
+runtime through GModule. This avoids forcing GPU provider libraries to resolve
+at process startup and lets users select a CPU, CUDA, ROCm/MIGraphX, or
+OpenVINO-enabled runtime by configuration.
+
+The `@onnxruntime_system` repository rule checks common Linux install paths.
+If ONNXRuntime is installed elsewhere, point Bazel at it explicitly:
+
+```sh
+ONNXRUNTIME_INCLUDE_DIR=/opt/onnxruntime/include \
+ONNXRUNTIME_LIBRARY=/opt/onnxruntime/lib/libonnxruntime.so \
+bazel build --config=linux --//bazel/config:enable_ai=true //src:darktable
+```
+
+`libarchive-dev` is installed by `install_deps.sh` because the AI model
+download path extracts ZIP archives. ONNXRuntime is not installed by
+`install_deps.sh`: Ubuntu's standard apt repositories do not provide a suitable
+development package on this system, and ONNXRuntime is large enough that it
+should remain an explicit opt-in dependency unless we later choose a pinned
+release archive.
+
+AI-specific targets:
+
+```sh
+bazel build --config=linux --//bazel/config:enable_ai=true //src:libneural_restore.so
+bazel build --config=linux --//bazel/config:enable_ai=true //src:bazel_ai_runtime_tree
+bazel test  --config=linux --//bazel/config:enable_ai=true //src:ai_backend_gtest
+```
+
+`ai_backend_gtest` is a GTest port of the legacy AI backend cmocka test. It
+uses the checked-in tiny ONNX model fixture, sets `DT_ORT_LIBRARY` to the
+resolved system runtime library, and exercises model discovery, CPU model load,
+introspection, inference, provider selection, refresh, optimization levels, and
+basic error paths.
+
 ## Bzlmod Layout
 
 `MODULE.bazel` is the top-level dependency declaration. It uses:
@@ -247,6 +298,10 @@ system headers and libraries.
 - `system_library_repository`, also in `bazel/pkg_config.bzl`, for transitional
   system dependencies that have stable headers/libraries but no usable
   pkg-config file on the target distro.
+
+The Bazel Central Registry currently has an `onnx` module, but not an
+ONNXRuntime module. ONNXRuntime is therefore not treated as a BCR leaf
+dependency in this migration step.
 
 Vendored local repositories currently modeled through `new_local_repository`
 are:
@@ -578,6 +633,8 @@ The Bazel build is not a replacement for the full CMake build yet. Known gaps:
   replacements for Linux-specific feature probes and link options.
 - `bazel_runtime_tree` is a runnable tree, not a distro package or system
   installation target.
+- AI is modeled as an optional Linux feature. Full AI parity depends on a local
+  ONNXRuntime install and the `--//bazel/config:enable_ai=true` flag.
 - The generated `config.h` is driven by an explicit Linux feature map rather
   than live configure probes. macOS and any other future platform need their own
   platform feature maps or a principled probe layer.

@@ -242,17 +242,18 @@ Optional desktop/system feature probes include:
   coverage should add CLI variants and carefully bounded GUI/view
   initialization.
 - Small legacy unit tests now have Bazel coverage through
-  `darktable_cache_test`, `darktable_variables_test`, `sample_gtest`, and
-  `filmicrgb_gtest`. Do not add cmocka to the Bazel dependency boundary for
-  those tests; prefer GTest runners or standalone C tests. The AI backend unit
-  test remains blocked until Bazel has a principled `darktable_ai`/ONNXRuntime
-  target.
+  `darktable_cache_test`, `darktable_variables_test`, `sample_gtest`,
+  `filmicrgb_gtest`, and optional `ai_backend_gtest`. Do not add cmocka to the
+  Bazel dependency boundary for those tests; prefer GTest runners or standalone
+  C tests. `ai_backend_gtest` requires
+  `--//bazel/config:enable_ai=true` plus a local ONNXRuntime install.
 - The Linux Bazel configuration models map/OSMGpsMap, print/CUPS,
-  colord/colord-gtk, libsecret, GMIC compressed LUTs, and X11/Xrandr for
-  `darktable-cmstest` as system dependencies. Auxiliary tool build coverage now
-  includes `darktable-cmstest`, `darktable-chart`, `darktable-curve-tool`, and
-  `darktable-noiseprofile`. Remaining fuller feature parity work includes
-  ImageMagick, AI/ONNXRuntime, and end-to-end chart/basecurve/noise workflows.
+  colord/colord-gtk, libsecret, GMIC compressed LUTs, X11/Xrandr for
+  `darktable-cmstest`, and optional AI/libarchive/ONNXRuntime as system
+  dependencies. Auxiliary tool build coverage now includes `darktable-cmstest`,
+  `darktable-chart`, `darktable-curve-tool`, and `darktable-noiseprofile`.
+  Remaining fuller feature parity work includes ImageMagick and end-to-end
+  chart/basecurve/noise workflows.
 - Add PortMidi support for the MIDI lighttable plugin only if that plugin is
   intentionally enabled and `portmidi.h`, `libportmidi`, or `portmidi.pc` is
   available or modeled hermetically.

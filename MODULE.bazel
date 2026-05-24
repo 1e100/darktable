@@ -110,6 +110,7 @@ archive_override(
 
 pkg_config_repository = use_repo_rule("//bazel:pkg_config.bzl", "pkg_config_repository")
 system_library_repository = use_repo_rule("//bazel:pkg_config.bzl", "system_library_repository")
+onnxruntime_system_repository = use_repo_rule("//bazel:pkg_config.bzl", "onnxruntime_system_repository")
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 new_local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "new_local_repository")
 
@@ -276,4 +277,19 @@ system_library_repository(
     name = "darktable_linux_desktop_gmic",
     include_paths = ["/usr/include/gmic.h"],
     linkopts = ["-lgmic"],
+)
+
+system_library_repository(
+    name = "darktable_linux_desktop_libarchive",
+    include_paths = [
+        "/usr/include/archive.h",
+        "/usr/include/archive_entry.h",
+    ],
+    linkopts = ["-larchive"],
+    required = False,
+)
+
+onnxruntime_system_repository(
+    name = "onnxruntime_system",
+    required = False,
 )

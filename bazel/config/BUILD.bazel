@@ -1,0 +1,15 @@
+load("//bazel:config.bzl", "bool_flag")
+
+package(default_visibility = ["//visibility:public"])
+
+bool_flag(
+    name = "enable_ai",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "ai_enabled",
+    flag_values = {
+        ":enable_ai": "true",
+    },
+)

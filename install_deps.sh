@@ -40,6 +40,7 @@ packages=(
   libosmgpsmap-1.0-dev
   libcups2-dev
   libgmic-dev
+  libarchive-dev
 
   # libgphoto2 keeps upstream module loading through system libltdl for now.
   libltdl-dev
