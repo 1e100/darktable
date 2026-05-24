@@ -18,13 +18,10 @@
 
 
 #define DT_UNIT_TEST
-// define dt alloc_aligned, so we don't need to include the rest of dt:
-#define dt_alloc_aligned(A, B) malloc(B)
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 // unit test for the concurrent hopscotch hashmap and the LRU cache built on top of it.
 #include "common/cache.h"
-#include "common/cache.c"
+#include "common/darktable.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -33,46 +30,101 @@
 #include <omp.h>
 #endif
 
-int32_t alloc_dummy(void *data, const uint32_t key, int32_t *cost, void **buf)
+darktable_t darktable;
+
+void *dt_alloc_aligned(const size_t size)
 {
-  *cost = 1; // also the default
-  *buf = (void *)(long int)key;
-  // request write lock for our buffer?
-  return 0;
+  void *buf = NULL;
+  if(posix_memalign(&buf, DT_CACHELINE_BYTES, dt_round_size(size, DT_CACHELINE_BYTES))) return NULL;
+  return buf;
+}
+
+size_t dt_round_size(const size_t size, const size_t alignment)
+{
+  const size_t remainder = size % alignment;
+  return remainder ? size + alignment - remainder : size;
+}
+
+void dt_print_ext(const char *msg, ...)
+{
+  (void)msg;
+}
+
+static void alloc_dummy(void *data, dt_cache_entry_t *entry)
+{
+  (void)data;
+  entry->cost = 1; // also the default
+  entry->data_size = sizeof(uint32_t);
+  entry->data = (void *)(uintptr_t)entry->key;
+}
+
+static void cleanup_dummy(void *data, dt_cache_entry_t *entry)
+{
+  (void)data;
+  (void)entry;
+}
+
+static int cache_size(const dt_cache_t *cache)
+{
+  return g_hash_table_size(cache->hashtable);
+}
+
+static int lru_check_consistency(const dt_cache_t *cache)
+{
+  int count = 0;
+  for(const GList *l = cache->lru; l; l = g_list_next(l))
+  {
+    const dt_cache_entry_t *entry = (const dt_cache_entry_t *)l->data;
+    assert(entry->link == l);
+    count++;
+  }
+  return count;
+}
+
+static int lru_check_consistency_reverse(const dt_cache_t *cache)
+{
+  int count = 0;
+  for(const GList *l = g_list_last(cache->lru); l; l = g_list_previous(l))
+  {
+    const dt_cache_entry_t *entry = (const dt_cache_entry_t *)l->data;
+    assert(entry->link == l);
+    count++;
+  }
+  return count;
 }
 
 int main(int argc, char *arg[])
 {
   dt_cache_t cache;
-  // dt_cache_init(&cache, 110000, 16, 64, 100000);
   // really hammer it, make quota insanely low:
-  dt_cache_init(&cache, 110000, 16, 64, 100);
+  dt_cache_init(&cache, sizeof(uint32_t), 100);
   dt_cache_set_allocate_callback(&cache, alloc_dummy, NULL);
+  dt_cache_set_cleanup_callback(&cache, cleanup_dummy, NULL);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(guided) shared(cache, stderr) num_threads(16)
 #endif
   for(int k = 0; k < 100000; k++)
   {
-    void *data = (void *)(long int)k;
-    const int size = 0; // dt_cache_size(&cache);
     const int con1 = dt_cache_contains(&cache, k);
-    const int val1 = (int)(long int)dt_cache_read_get(&cache, k);
-    const int val2 = (int)(long int)dt_cache_read_get(&cache, k);
+    dt_cache_entry_t *entry = dt_cache_get(&cache, k, 'r');
+    const int val1 = (int)(uintptr_t)entry->data;
+    dt_cache_release(&cache, entry);
+    entry = dt_cache_get(&cache, k, 'r');
+    const int val2 = (int)(uintptr_t)entry->data;
     // fprintf(stderr, "\rinserted number %d, size %d, value %d - %d, contains %d - %d", k, size, val1, val2,
     // con1, con2);
     const int con2 = dt_cache_contains(&cache, k);
     assert(con1 == 0);
     assert(con2 == 1);
+    assert(val1 == k);
     assert(val2 == k);
-    dt_cache_read_release(&cache, k);
-    dt_cache_read_release(&cache, k);
+    dt_cache_release(&cache, entry);
   }
-  dt_cache_print_locked(&cache);
   // fprintf(stderr, "\n");
   fprintf(stderr, "[passed] inserting 100000 entries concurrently\n");
 
-  const int size = dt_cache_size(&cache);
+  const int size = cache_size(&cache);
   const int lru_cnt = lru_check_consistency(&cache);
   const int lru_cnt_r = lru_check_consistency_reverse(&cache);
   // fprintf(stderr, "lru list contains %d|%d/%d entries\n", lru_cnt, lru_cnt_r, size);
@@ -89,33 +141,34 @@ int main(int argc, char *arg[])
     dt_cache_t cache2;
     // really hammer it, make quota insanely low:
     // capacity 1 num threads 1 cache line size 64 ignored, quota 2 (80% => 1)
-    dt_cache_init(&cache2, 1, 1, 64, 2);
+    dt_cache_init(&cache2, sizeof(uint32_t), 2);
     dt_cache_set_allocate_callback(&cache2, alloc_dummy, NULL);
+    dt_cache_set_cleanup_callback(&cache2, cleanup_dummy, NULL);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(guided) shared(cache2, stderr) num_threads(16)
 #endif
     for(int k = 0; k < 100000; k++)
     {
-      void *data = (void *)(long int)k;
-      const int size = 0; // dt_cache_size(&cache);
       const int con1 = dt_cache_contains(&cache2, k);
-      const int val1 = (int)(long int)dt_cache_read_get(&cache2, k);
-      const int val2 = (int)(long int)dt_cache_read_get(&cache2, k);
+      dt_cache_entry_t *entry = dt_cache_get(&cache2, k, 'r');
+      const int val1 = (int)(uintptr_t)entry->data;
+      dt_cache_release(&cache2, entry);
+      entry = dt_cache_get(&cache2, k, 'r');
+      const int val2 = (int)(uintptr_t)entry->data;
       // fprintf(stderr, "\rinserted number %d, size %d, value %d - %d, contains %d - %d", k, size, val1,
       // val2, con1, con2);
       const int con2 = dt_cache_contains(&cache2, k);
       assert(con1 == 0);
       assert(con2 == 1);
+      assert(val1 == k);
       assert(val2 == k);
-      dt_cache_read_release(&cache2, k);
-      dt_cache_read_release(&cache2, k);
+      dt_cache_release(&cache2, entry);
     }
-    dt_cache_print_locked(&cache2);
     // fprintf(stderr, "\n");
     fprintf(stderr, "[passed] inserting 100000 entries concurrently\n");
 
-    const int size = dt_cache_size(&cache2);
+    const int size = cache_size(&cache2);
     const int lru_cnt = lru_check_consistency(&cache2);
     const int lru_cnt_r = lru_check_consistency_reverse(&cache2);
     // fprintf(stderr, "lru list contains %d|%d/%d entries\n", lru_cnt, lru_cnt_r, size);
@@ -132,4 +185,3 @@ int main(int argc, char *arg[])
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

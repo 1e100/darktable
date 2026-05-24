@@ -241,6 +241,12 @@ Optional desktop/system feature probes include:
   exercises a real JPEG export through the arranged `darktable-cli`. Remaining
   coverage should add CLI variants and carefully bounded GUI/view
   initialization.
+- Small legacy unit tests now have Bazel coverage through
+  `darktable_cache_test`, `darktable_variables_test`, `sample_gtest`, and
+  `filmicrgb_gtest`. Do not add cmocka to the Bazel dependency boundary for
+  those tests; prefer GTest runners or standalone C tests. The AI backend unit
+  test remains blocked until Bazel has a principled `darktable_ai`/ONNXRuntime
+  target.
 - The Linux Bazel configuration models map/OSMGpsMap, print/CUPS,
   colord/colord-gtk, libsecret, and GMIC compressed LUTs as system
   dependencies. Remaining fuller feature parity work includes ImageMagick,
@@ -270,6 +276,7 @@ For runtime-layout changes, also run:
 
 ```sh
 bazel build --config=linux //src:bazel_runtime_tree
+bazel test --config=linux //src:darktable_cache_test //src:darktable_variables_test //src:sample_gtest //src:filmicrgb_gtest
 bazel test --config=linux //src:bazel_runtime_smoke_test
 bazel test --config=linux //src:bazel_plugin_load_smoke_test
 bazel test --config=linux //src:bazel_plugin_init_smoke_test

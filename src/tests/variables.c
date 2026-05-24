@@ -1,7 +1,13 @@
 #include "common/darktable.h"
 #include "common/variables.h"
 
+#include <errno.h>
+#include <glib/gstdio.h>
+#include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 
 #ifdef _WIN32
 #include "win/main_wrapper.h"
@@ -197,9 +203,111 @@ static const test_t test_real_paths = {
     printf("%d / %d tests failed\n\n", n_failed, n_tests);\
 }
 
+static gboolean is_directory(const char *path)
+{
+  struct stat st;
+  return path && stat(path, &st) == 0 && S_ISDIR(st.st_mode);
+}
+
+static char *join_path(const char *left, const char *right)
+{
+  return g_build_filename(left, right, NULL);
+}
+
+static char *resolve_runtime_root(const char *arg)
+{
+  if(!arg || !*arg) return NULL;
+
+  char resolved[PATH_MAX];
+  if(realpath(arg, resolved) && is_directory(resolved)) return g_strdup(resolved);
+
+  const char *test_srcdir = getenv("TEST_SRCDIR");
+  const char *test_workspace = getenv("TEST_WORKSPACE");
+  if(test_srcdir && test_workspace)
+  {
+    char *candidate = g_build_filename(test_srcdir, test_workspace, arg, NULL);
+    char *result = realpath(candidate, resolved) && is_directory(resolved) ? g_strdup(resolved) : NULL;
+    g_free(candidate);
+    if(result) return result;
+  }
+
+  if(test_srcdir)
+  {
+    char *candidate = g_build_filename(test_srcdir, arg, NULL);
+    char *result = realpath(candidate, resolved) && is_directory(resolved) ? g_strdup(resolved) : NULL;
+    g_free(candidate);
+    if(result) return result;
+  }
+
+  return NULL;
+}
+
+static gboolean prepare_dir(const char *path)
+{
+  if(g_mkdir_with_parents(path, 0700) == 0) return TRUE;
+  fprintf(stderr, "could not create %s: %s\n", path, g_strerror(errno));
+  return FALSE;
+}
+
+static gboolean set_env_path(const char *name, const char *runtime_root, const char *suffix)
+{
+  char *path = join_path(runtime_root, suffix);
+  const int result = setenv(name, path, 1);
+  if(result != 0) fprintf(stderr, "could not set %s: %s\n", name, g_strerror(errno));
+  g_free(path);
+  return result == 0;
+}
+
 int main(int argc, char* argv[])
 {
-  char *argv_override[] = {"darktable-test-variables", "--library", ":memory:", "--conf", "write_sidecar_files=never", NULL};
+  char *runtime_root = resolve_runtime_root(argc > 1 ? argv[1] : NULL);
+  const char *tmp_env = getenv("TEST_TMPDIR");
+  const char *tmp_root = tmp_env && *tmp_env ? tmp_env : "/tmp";
+  char *home_dir = join_path(tmp_root, "darktable-variables-home");
+  char *config_dir = join_path(tmp_root, "darktable-variables-config");
+  char *cache_dir = join_path(tmp_root, "darktable-variables-cache");
+  char *data_dir = join_path(tmp_root, "darktable-variables-data");
+  char *tmp_dir = join_path(tmp_root, "darktable-variables-tmp");
+
+  if(!runtime_root)
+  {
+    fprintf(stderr, "usage: %s <bazel-runtime-tree>\n", argv[0]);
+    exit(2);
+  }
+
+  if(!prepare_dir(home_dir)
+     || !prepare_dir(config_dir)
+     || !prepare_dir(cache_dir)
+     || !prepare_dir(data_dir)
+     || !prepare_dir(tmp_dir))
+    exit(2);
+
+  setenv("HOME", home_dir, 1);
+  setenv("XDG_CONFIG_HOME", config_dir, 1);
+  setenv("XDG_CACHE_HOME", cache_dir, 1);
+  setenv("XDG_DATA_HOME", data_dir, 1);
+
+  if(!set_env_path("ICU_DATA", runtime_root, "share/darktable/icu")
+     || !set_env_path("CAMLIBS", runtime_root, "lib/darktable/libgphoto2/2.5.33")
+     || !set_env_path("IOLIBS", runtime_root, "lib/darktable/libgphoto2_port/0.12.2"))
+    exit(2);
+
+  char *dt_datadir = join_path(runtime_root, "share/darktable");
+  char *dt_moduledir = join_path(runtime_root, "lib/darktable");
+  char *dt_localedir = join_path(runtime_root, "share/locale");
+  char *argv_override[] = {
+    "darktable-test-variables",
+    "--library", ":memory:",
+    "--datadir", dt_datadir,
+    "--moduledir", dt_moduledir,
+    "--localedir", dt_localedir,
+    "--configdir", config_dir,
+    "--cachedir", cache_dir,
+    "--tmpdir", tmp_dir,
+    "--disable-opencl",
+    "--conf", "write_sidecar_files=never",
+    NULL
+  };
   int argc_override = sizeof(argv_override) / sizeof(*argv_override) - 1;
 
   // init dt without gui and without data.db:
@@ -227,11 +335,20 @@ int main(int argc, char* argv[])
 
   dt_cleanup();
 
-  return 0;
+  g_free(dt_localedir);
+  g_free(dt_moduledir);
+  g_free(dt_datadir);
+  g_free(tmp_dir);
+  g_free(data_dir);
+  g_free(cache_dir);
+  g_free(config_dir);
+  g_free(home_dir);
+  g_free(runtime_root);
+
+  return n_failed_overall ? 1 : 0;
 }
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

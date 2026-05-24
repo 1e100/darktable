@@ -146,6 +146,23 @@ That test points `ICU_DATA` at the generated runtime tree, opens an in-memory
 SQLite database, registers `src/common/sqliteicu.c`, and verifies that
 `icu_load_collation` can create an ICU-backed collation.
 
+Several small legacy unit tests are also modeled directly under Bazel:
+
+```sh
+bazel test --config=linux //src:darktable_cache_test
+bazel test --config=linux //src:darktable_variables_test
+bazel test --config=linux //src:sample_gtest
+bazel test --config=linux //src:filmicrgb_gtest
+```
+
+`darktable_cache_test` updates the old standalone cache stress test to the
+current `dt_cache_get()`/`dt_cache_release()` API. `darktable_variables_test`
+uses the real non-GUI `dt_init()` path against the Bazel runtime tree with
+isolated config/cache/data directories. `sample_gtest` is a minimal GTest
+sanity target replacing the former cmocka sample. `filmicrgb_gtest` is a GTest
+runner over C test cases compiled as C, so the filmic RGB production module is
+not forced through a C++ compiler.
+
 `//src:darktable-bazel` also emits `bazel-bin/src/darktable-bazel`, a small
 wrapper that forwards to the launcher inside the runtime tree.
 
@@ -198,8 +215,7 @@ system headers and libraries.
 - `rules_cc` for C/C++ rules.
 - `rules_pkg` for future packaging work.
 - `rules_shell` for shell smoke tests.
-- `googletest` for C++ smoke tests that need fixture-level setup around real
-  darktable process state.
+- `googletest` for C++ smoke and unit test runners.
 - Bazel Central Registry modules for migrated leaf libraries: `zlib`,
   `sqlite3`, `pugixml`, `brotli`, `curl`, `highway`, `libexpat`, `libpng`,
   `libjpeg_turbo`, `libxml2`, `libwebp`, `libtiff`, `libavif`, `libheif`,
@@ -278,8 +294,8 @@ The `openexr` BCR module is patched through `single_version_override` to compile
 otherwise hides glibc's endian conversion macros from `<endian.h>`.
 
 The `googletest` BCR module is patched so its upstream BUILD file explicitly
-loads C++ rules under Bazel 9. The test dependency is used only for Bazel smoke
-tests and is not part of the darktable runtime closure.
+loads C++ rules under Bazel 9. The test dependency is used only for Bazel tests
+and is not part of the darktable runtime closure.
 
 The `icu` BCR module does not expose pkg-config-like `icu-uc`, `icu-i18n`, and
 `icu-io` aliases. `//third_party/icu:icu` is a narrow aggregate over the ICU

@@ -1179,6 +1179,77 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "darktable_cache_test_lib",
+    srcs = [
+        "common/cache.c",
+        "tests/cache.c",
+    ],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES,
+    deps = [
+        ":darktable_public_headers",
+    ] + PUBLIC_HEADER_DEPS,
+)
+
+cc_test(
+    name = "darktable_cache_test",
+    size = "medium",
+    deps = [":darktable_cache_test_lib"],
+)
+
+cc_test(
+    name = "darktable_variables_test",
+    srcs = ["tests/variables.c"],
+    args = ["$(rootpath :bazel_runtime_tree)"],
+    copts = COMMON_COPTS,
+    data = [":bazel_runtime_tree"],
+    includes = COMMON_INCLUDES,
+    linkopts = ["-Wl,-rpath,$$ORIGIN/../lib/darktable"],
+    size = "small",
+    deps = [
+        ":darktable_public_headers",
+        ":darktable_shared",
+    ] + PUBLIC_HEADER_DEPS,
+)
+
+cc_test(
+    name = "sample_gtest",
+    srcs = ["tests/unittests/sample_gtest.cc"],
+    size = "small",
+    deps = ["@googletest//:gtest_main"],
+)
+
+cc_library(
+    name = "filmicrgb_gtest_lib",
+    srcs = [
+        "tests/unittests/iop/filmicrgb_gtest.cc",
+        "tests/unittests/iop/filmicrgb_test_cases.c",
+        "tests/unittests/util/testimg.c",
+        "tests/unittests/util/testimg.h",
+        "tests/unittests/util/tracing.h",
+    ],
+    copts = COMMON_COPTS,
+    includes = COMMON_INCLUDES + [
+        "tests/unittests",
+        "tests/unittests/util",
+    ],
+    linkstatic = True,
+    textual_hdrs = ["iop/filmicrgb.c"],
+    deps = CORE_DEPS + [
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "filmicrgb_gtest",
+    size = "small",
+    deps = [
+        ":filmicrgb_gtest_lib",
+        "@googletest//:gtest_main",
+    ],
+)
+
 filegroup(
     name = "iop_module_sources",
     srcs = glob(["iop/*.[ch]", "iop/*.cc", "iop/demosaicing/*"], allow_empty = True),
