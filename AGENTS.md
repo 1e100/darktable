@@ -1,0 +1,229 @@
+# Repository Guide
+
+This file is for coding agents and future maintainers working in this checkout.
+It summarizes repo conventions, the application shape, and the current state of
+the Bazel migration.
+
+## Working Conventions
+
+- Prefer existing darktable patterns over new abstractions. The codebase is
+  mature C/C++ with many local conventions around modules, plugins, and runtime
+  loading.
+- Keep changes tightly scoped. Do not mix CMake cleanup, Bazel migration,
+  feature work, and source refactors unless the task explicitly calls for it.
+- Treat the CMake build as legacy for this migration. Avoid spending effort
+  keeping it green unless the user specifically asks; it is expected to be
+  deleted later.
+- Use Bazelisk or a `bazel` launcher backed by Bazelisk. `.bazelversion` pins
+  the expected Bazel version.
+- The current Bazel target platform is Linux. Future macOS support should reuse
+  the Bzlmod structure but will need platform-specific config, framework
+  linking, install-name/RPATH handling, and replacements for Linux-only flags.
+- The repository defaults to C++20 and C99 through `.bazelrc`.
+- Do not depend directly on external repository labels from darktable source
+  targets when there is a root-owned alias under `third_party/`.
+- When adding dependency BUILD files manually, keep them small, pinned, and
+  close to the upstream library layout. Prefer BCR modules, then pinned upstream
+  release archives with custom BUILD overlays.
+- Keep GTK and tightly coupled desktop integration as the explicit system
+  boundary. Do not try to hermeticize GTK, Cairo, Pango, Rsvg, GLib, or Wayland
+  as part of leaf-dependency work.
+
+## Application Architecture
+
+darktable is a GTK desktop photo workflow application with a shared core library,
+CLI binaries, dynamically loaded modules, and a runtime data tree.
+
+Important source areas:
+
+- `src/common/`: core services such as database handling, image metadata,
+  configuration, module loading, OpenCL support, mipmap/cache management, and
+  integration utilities.
+- `src/control/`: job control, background work, and application control flow.
+- `src/develop/`: image development pipeline support.
+- `src/gui/`: GTK UI infrastructure and desktop backend integration.
+- `src/iop/`: image operation plugins. These are built as shared libraries and
+  loaded at runtime.
+- `src/libs/`: UI/lighttable-side plugins and panels, also loaded as modules.
+- `src/views/`: top-level application views such as darkroom, lighttable,
+  slideshow, and tethering.
+- `src/imageio/format/`: import/export format plugins.
+- `src/imageio/storage/`: export storage plugins.
+- `src/external/`: vendored source trees used by darktable, including Lua,
+  LibRaw, RawSpeed, whereami, libxcf, and LuaAutoC.
+- `data/`, `tools/`, `packaging/`, `po/`, and `doc/`: runtime data,
+  generated/configured assets, packaging support, translations, and docs.
+
+The Bazel runtime tree must preserve darktable's loader expectations:
+
+- binaries under `bin/`
+- `libdarktable.so` under `lib/darktable/`
+- view plugins under `lib/darktable/views/`
+- IOP plugins under `lib/darktable/plugins/`
+- lighttable plugins under `lib/darktable/plugins/lighttable/`
+- image I/O plugins under `lib/darktable/plugins/imageio/{format,storage}/`
+- runtime data under `share/darktable/`
+- locale files under `share/locale/`
+
+## Bazel Entry Points
+
+Main Linux milestone:
+
+```sh
+bazel build --config=linux //src:bazel_build_milestone
+```
+
+Other useful targets:
+
+```sh
+bazel build --config=linux //third_party/...
+bazel build --config=linux //src:bazel_plugin_milestone
+bazel build --config=linux //src:bazel_plugin_runtime_layout
+bazel build --config=linux //src:bazel_runtime_tree
+```
+
+The runnable Bazel launcher is:
+
+```sh
+bazel-bin/src/darktable-runtime/bin/darktable-bazel --version
+```
+
+For a sandbox verification rebuild:
+
+```sh
+bazel build --config=linux --copt=-DDT_BAZEL_SANDBOX_VERIFY //src:bazel_build_milestone
+```
+
+## Bazel Structure
+
+- `MODULE.bazel` declares Bzlmod dependencies and repository rules.
+- `MODULE.bazel.lock` is checked in and should be updated when dependency
+  resolution changes.
+- `.bazelrc` enables Bzlmod and sets shared C/C++ defaults.
+- `bazel/pkg_config.bzl` defines `pkg_config_repository`, the transitional
+  system dependency bridge.
+- `bazel/third_party/` contains BUILD overlays for vendored source trees under
+  `src/external/`.
+- `third_party/` contains root-owned aliases and source-archive BUILD overlays
+  for migrated dependencies.
+- `src/BUILD.bazel` currently models the main binaries, core shared library,
+  plugins, generated files, and runtime tree assembly.
+
+The transitional `pkg_config_repository` exposes a single `:pkg` target per
+repository. It shells out to `pkg-config`, splits compiler and linker flags, and
+symlinks include roots into the external repository so Bazel's include checking
+can see host headers.
+
+## Migrated Dependencies
+
+The current leaf dependencies modeled under Bazel are:
+
+- BCR modules: zlib, SQLite, pugixml, libpng, libjpeg-turbo, libxml2, WebP,
+  libtiff, AVIF, HEIF, Imath, OpenEXR, and ICU.
+- Pinned source archives: Little CMS and OpenJPEG.
+- Existing vendored local repositories: whereami, libxcf, Lua, LuaAutoC,
+  LibRaw, and RawSpeed.
+
+Root-owned aliases currently include:
+
+- `//third_party/avif:avif`
+- `//third_party/heif:heif`
+- `//third_party/icu:icu`
+- `//third_party/imath:imath`
+- `//third_party/jpeg:jpeg`
+- `//third_party/lcms2:lcms2`
+- `//third_party/openexr:openexr`
+- `//third_party/openjpeg:openjpeg`
+- `//third_party/png:png`
+- `//third_party/pugixml:pugixml`
+- `//third_party/sqlite:sqlite`
+- `//third_party/tiff:tiff`
+- `//third_party/webp:webp`
+- `//third_party/webp:webpmux`
+- `//third_party/xml:xml`
+- `//third_party/zlib:zlib`
+
+The Bazel build also removed SDL2/gamepad support from both Bazel and CMake.
+
+## Dependency Boundary
+
+Keep these system-provided for now:
+
+- GTK, GLib, GIO, GModule, GThread
+- GDK Pixbuf
+- Cairo, Pango, PangoCairo, ATK, librsvg
+- json-glib
+- Wayland client integration used through GTK/GDK desktop backend handling
+
+Remaining transitional probe dependencies include:
+
+- libcurl
+- Exiv2
+- lensfun
+- libgphoto2
+- JPEG XL
+- GraphicsMagick
+
+Optional desktop/system feature probes include:
+
+- colord
+- colord-gtk
+- libsecret
+- osmgpsmap
+- portmidi
+
+## Known Bazel Patches And Caveats
+
+- libpng is patched so darktable's global `HAVE_CONFIG_H` does not make libpng
+  look for its own Autoconf `config.h`.
+- libwebp is patched so darktable's global `HAVE_CONFIG_H` does not make WebP
+  look for `src/webp/config.h`.
+- libxml2 is patched so package `config.h` macros do not leak into darktable
+  compile actions when `DT_BAZEL_BUILD` is present.
+- OpenJPEG uses a source-archive patch to materialize CMake-generated config
+  headers.
+- OpenEXR is patched so `OpenEXRCore` compiles with `_DEFAULT_SOURCE`; the
+  repo-wide `_XOPEN_SOURCE=700` otherwise hides glibc endian macros.
+- ICU is wired as a narrow aggregate for `src/common/sqliteicu.c`. It currently
+  links ICU stub data; real ICU runtime data still needs to be modeled and
+  smoke-tested before claiming full ICU parity.
+
+## Remaining Work
+
+- Continue evaluating manageable leaf dependencies for in-tree builds. Lensfun
+  is the most plausible remaining candidate, but it needs runtime database
+  packaging in addition to the library.
+- Defer broad or gnarly stacks: GTK/Cairo/Pango/Rsvg/GLib, libgphoto2,
+  Wayland/desktop integration, Exiv2, libcurl/TLS, GraphicsMagick, and JPEG XL.
+- Package or otherwise model ICU runtime data for the Bazel runtime tree.
+- Expand `linux_full` feature coverage: map/OSMGpsMap, print/CUPS,
+  colord/colord-gtk, libsecret, GMIC compressed LUTs, ImageMagick,
+  AI/ONNXRuntime, cmstest, chart tools/tests, basecurve tools, and noise tools.
+- Add PortMidi support for the MIDI lighttable plugin only if that plugin is
+  intentionally enabled and `portmidi.h`, `libportmidi`, or `portmidi.pc` is
+  available or modeled hermetically.
+- Replace the static Linux `config.h` approximation with explicit Bazel feature
+  configuration or probes that track the CMake feature matrix.
+- Add macOS support.
+- Add Bazel test coverage for unit tests, integration tests where practical,
+  plugin loading smoke tests, and runtime-tree smoke tests using both
+  `--moduledir` and `--datadir`.
+- Add install/package artifacts after the functional runtime tree settles.
+- Model translated desktop/appstream metadata, manpages, and generated docs.
+
+## Verification Expectations
+
+For dependency/build-graph changes, run:
+
+```sh
+bazel build --config=linux //third_party/...
+bazel build --config=linux //src:bazel_build_milestone
+git diff --check
+```
+
+For runtime-layout changes, also run:
+
+```sh
+bazel build --config=linux //src:bazel_runtime_tree
+bazel-bin/src/darktable-runtime/bin/darktable-bazel --version
+```
