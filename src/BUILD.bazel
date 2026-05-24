@@ -297,30 +297,6 @@ GENERATED_HDRS = [
     ":tools/darktable_authors.h",
 ]
 
-BAZEL_LEAF_DEPS = [
-    "//third_party/avif:avif",
-    "//third_party/curl:curl",
-    "//third_party/exiv2:exiv2",
-    "//third_party/gphoto2:gphoto2",
-    "//third_party/heif:heif",
-    "//third_party/icu:icu",
-    "//third_party/imath:imath",
-    "//third_party/jpeg:jpeg",
-    "//third_party/jxl:jxl",
-    "//third_party/lcms2:lcms2",
-    "//third_party/lensfun:lensfun",
-    "//third_party/openexr:openexr",
-    "//third_party/openjpeg:openjpeg",
-    "//third_party/png:png",
-    "//third_party/pugixml:pugixml",
-    "//third_party/sqlite:sqlite",
-    "//third_party/tiff:tiff",
-    "//third_party/webp:webp",
-    "//third_party/webp:webpmux",
-    "//third_party/xml:xml",
-    "//third_party/zlib:zlib",
-]
-
 PUBLIC_HEADER_DEPS = [
     "//third_party/curl:curl",
     "//third_party/gphoto2:gphoto2",
@@ -328,6 +304,7 @@ PUBLIC_HEADER_DEPS = [
     "//third_party/lcms2:lcms2",
     "//third_party/png:png",
     "//third_party/sqlite:sqlite_headers",
+    "@darktable_linux_desktop_map//:pkg",
     "@gtk_stack//:pkg",
     "@lautoc//:lautoc",
     "@lua_internal//:lua",
@@ -376,15 +353,54 @@ LINUX_DESKTOP_GMIC_DEPS = ["@darktable_linux_desktop_gmic//:pkg"]
 LINUX_DESKTOP_X11_DEPS = ["@darktable_linux_desktop_x11//:pkg"]
 LINUX_DESKTOP_LIBARCHIVE_DEPS = ["@darktable_linux_desktop_libarchive//:pkg"]
 
-CORE_DEPS = [
+CORE_BASE_DEPS = [
     ":darktable_public_headers",
     ":potrace_system",
+    "//third_party/lcms2:lcms2",
+    "//third_party/sqlite:sqlite",
+    "@gtk_stack//:pkg",
     "@lautoc//:lautoc",
     "@lua_internal//:lua",
     "@whereami//:whereami",
-] + BAZEL_LEAF_DEPS + [
-    "@gtk_stack//:pkg",
-] + LINUX_DESKTOP_MAP_DEPS
+]
+
+CORE_METADATA_DEPS = [
+    "//third_party/exiv2:exiv2",
+    "//third_party/pugixml:pugixml",
+    "//third_party/xml:xml",
+]
+
+CORE_IMAGEIO_DEPS = [
+    "//third_party/avif:avif",
+    "//third_party/heif:heif",
+    "//third_party/imath:imath",
+    "//third_party/jpeg:jpeg",
+    "//third_party/jxl:jxl",
+    "//third_party/openexr:openexr",
+    "//third_party/openjpeg:openjpeg",
+    "//third_party/png:png",
+    "//third_party/tiff:tiff",
+    "//third_party/webp:webp",
+    "//third_party/webp:webpmux",
+]
+
+CORE_COMPRESSION_DEPS = ["//third_party/zlib:zlib"]
+
+CORE_RAW_DEPS = [
+    "@libraw_internal//:libraw",
+    "@rawspeed//:rawspeed",
+]
+
+CORE_CAMERA_DEPS = ["//third_party/gphoto2:gphoto2"]
+CORE_PRINT_DEPS = LINUX_DESKTOP_PRINT_DEPS
+CORE_MAP_DEPS = LINUX_DESKTOP_MAP_DEPS
+CORE_COLOR_DEPS = LINUX_DESKTOP_COLORD_DEPS
+CORE_SECRET_DEPS = LINUX_DESKTOP_LIBSECRET_DEPS
+CORE_GMIC_DEPS = LINUX_DESKTOP_GMIC_DEPS
+CORE_NETWORK_DEPS = ["//third_party/curl:curl"]
+CORE_LENS_DEPS = ["//third_party/lensfun:lensfun"]
+CORE_ICU_DEPS = ["//third_party/icu:icu"]
+CORE_OPENCL_DEPS = CORE_COMPRESSION_DEPS
 
 AI_FEATURE_DEPS = select({
     AI_ENABLED: [
@@ -394,7 +410,7 @@ AI_FEATURE_DEPS = select({
     "//conditions:default": [],
 })
 
-CORE_DEPS_WITH_AI = CORE_DEPS + AI_FEATURE_DEPS
+CORE_AI_DEPS = AI_FEATURE_DEPS
 
 alias(
     name = "potrace_system",
@@ -406,7 +422,7 @@ dt_core_lib(
     srcs = glob(["bauhaus/*.c"], allow_empty = True),
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS_WITH_AI,
+    deps = CORE_BASE_DEPS,
 )
 
 dt_core_lib(
@@ -427,9 +443,17 @@ dt_core_lib(
     ], allow_empty = True),
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS_WITH_AI + [
-        "@libraw_internal//:libraw",
-    ] + LINUX_DESKTOP_COLORD_DEPS,
+    deps = (
+        CORE_BASE_DEPS +
+        CORE_METADATA_DEPS +
+        CORE_IMAGEIO_DEPS +
+        CORE_COMPRESSION_DEPS +
+        CORE_RAW_DEPS +
+        CORE_COLOR_DEPS +
+        CORE_NETWORK_DEPS +
+        CORE_LENS_DEPS +
+        CORE_ICU_DEPS
+    ),
 )
 
 dt_core_lib(
@@ -441,7 +465,7 @@ dt_core_lib(
     ],
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS_WITH_AI + LINUX_DESKTOP_PRINT_DEPS,
+    deps = CORE_BASE_DEPS + CORE_PRINT_DEPS,
 )
 
 dt_core_lib(
@@ -449,7 +473,7 @@ dt_core_lib(
     srcs = ["common/camera_control.c"],
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS_WITH_AI,
+    deps = CORE_BASE_DEPS + CORE_CAMERA_DEPS,
 )
 
 dt_core_lib(
@@ -462,7 +486,7 @@ dt_core_lib(
     ],
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS_WITH_AI,
+    deps = CORE_BASE_DEPS + CORE_OPENCL_DEPS,
 )
 
 dt_core_lib(
@@ -470,7 +494,7 @@ dt_core_lib(
     srcs = glob(["control/*.c", "control/jobs/*.c"], allow_empty = True),
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS_WITH_AI,
+    deps = CORE_BASE_DEPS + CORE_CAMERA_DEPS,
 )
 
 dt_core_lib(
@@ -488,7 +512,7 @@ dt_core_lib(
     ],
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS_WITH_AI,
+    deps = CORE_BASE_DEPS + CORE_METADATA_DEPS,
 )
 
 dt_core_lib(
@@ -496,7 +520,7 @@ dt_core_lib(
     srcs = glob(["dtgtk/*.c"], allow_empty = True),
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS_WITH_AI,
+    deps = CORE_BASE_DEPS + CORE_MAP_DEPS,
 )
 
 dt_core_lib(
@@ -504,7 +528,7 @@ dt_core_lib(
     srcs = glob(["gui/*.c"], exclude = ["gui/preferences_ai.c"], allow_empty = True),
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS_WITH_AI,
+    deps = CORE_BASE_DEPS + CORE_CAMERA_DEPS + CORE_MAP_DEPS,
 )
 
 dt_core_lib(
@@ -514,10 +538,13 @@ dt_core_lib(
     ], allow_empty = True),
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS_WITH_AI + [
-        "@libraw_internal//:libraw",
-        "@rawspeed//:rawspeed",
-    ],
+    deps = (
+        CORE_BASE_DEPS +
+        CORE_METADATA_DEPS +
+        CORE_IMAGEIO_DEPS +
+        CORE_COMPRESSION_DEPS +
+        CORE_RAW_DEPS
+    ),
 )
 
 dt_core_lib(
@@ -528,7 +555,7 @@ dt_core_lib(
     ],
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS_WITH_AI,
+    deps = CORE_BASE_DEPS + CORE_MAP_DEPS + CORE_PRINT_DEPS,
 )
 
 dt_core_lib(
@@ -580,7 +607,7 @@ dt_core_lib(
     ],
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS_WITH_AI,
+    deps = CORE_BASE_DEPS + CORE_IMAGEIO_DEPS + CORE_NETWORK_DEPS + CORE_AI_DEPS,
 )
 
 dt_core_lib(
@@ -592,7 +619,7 @@ dt_core_lib(
     ],
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS_WITH_AI + LINUX_DESKTOP_LIBSECRET_DEPS,
+    deps = CORE_BASE_DEPS + CORE_SECRET_DEPS,
 )
 
 cc_library(
@@ -604,7 +631,7 @@ cc_library(
     hdrs = ["ai/backend.h"],
     copts = COMMON_COPTS,
     includes = COMMON_INCLUDES,
-    deps = CORE_DEPS + [
+    deps = CORE_BASE_DEPS + [
         "@onnxruntime_system//:headers",
     ],
 )
@@ -628,7 +655,7 @@ dt_core_lib(
     ], allow_empty = True) + [
         "common/ai_models.h",
     ],
-    deps = CORE_DEPS + AI_FEATURE_DEPS,
+    deps = CORE_BASE_DEPS + CORE_NETWORK_DEPS + CORE_AI_DEPS,
 )
 
 cc_library(
@@ -836,7 +863,7 @@ cc_library(
         "@gtk_stack//:pkg",
         "@lautoc//:lautoc",
         "@lua_internal//:lua",
-    ] + LINUX_DESKTOP_MAP_DEPS + AI_FEATURE_DEPS,
+    ] + CORE_MAP_DEPS + CORE_AI_DEPS,
 )
 
 PLUGIN_LINK_DEPS = [
@@ -920,7 +947,7 @@ IOP_PLUGINS = [
     ("hazeremoval", "iop/hazeremoval.c", []),
     ("filmic", "iop/filmic.c", []),
     ("mask_manager", "iop/mask_manager.c", []),
-    ("lut3d", "iop/lut3d.c", [], ["//third_party/png:png"], ["iop/lut3dgmic.cpp"], LINUX_DESKTOP_GMIC_DEPS),
+    ("lut3d", "iop/lut3d.c", [], ["//third_party/png:png"], ["iop/lut3dgmic.cpp"], CORE_GMIC_DEPS),
     ("toneequal", "iop/toneequal.c", []),
     ("filmicrgb", "iop/filmicrgb.c", []),
     ("negadoctor", "iop/negadoctor.c", []),
@@ -965,8 +992,8 @@ dt_plugin_runtime_layout(
 VIEW_PLUGINS = [
     ("darkroom", ["views/darkroom.c"]),
     ("lighttable", ["views/lighttable.c"]),
-    ("map", ["views/map.c"], LINUX_DESKTOP_MAP_DEPS),
-    ("print", ["views/print.c"], LINUX_DESKTOP_PRINT_DEPS),
+    ("map", ["views/map.c"], CORE_MAP_DEPS),
+    ("print", ["views/print.c"], CORE_PRINT_DEPS),
     ("slideshow", ["views/slideshow.c"]),
     ("tethering", ["views/tethering.c"]),
 ]
@@ -1016,8 +1043,8 @@ LIGHTTABLE_PLUGINS = [
     ("location", ["libs/location.c"], [
         "//third_party/curl:curl",
     ]),
-    ("map_settings", ["libs/map_settings.c"], LINUX_DESKTOP_MAP_DEPS),
-    ("map_locations", ["libs/map_locations.c"], LINUX_DESKTOP_MAP_DEPS),
+    ("map_settings", ["libs/map_settings.c"], CORE_MAP_DEPS),
+    ("map_locations", ["libs/map_locations.c"], CORE_MAP_DEPS),
     ("snapshots", ["libs/snapshots.c"]),
     ("modulegroups", ["libs/modulegroups.c"]),
     ("backgroundjobs", ["libs/backgroundjobs.c"]),
@@ -1043,7 +1070,7 @@ LIGHTTABLE_PLUGINS = [
     ("camera", ["libs/camera.c"]),
     ("live_view", ["libs/live_view.c"]),
     ("geotagging", ["libs/geotagging.c"]),
-    ("print_settings", ["libs/print_settings.c"], LINUX_DESKTOP_PRINT_DEPS),
+    ("print_settings", ["libs/print_settings.c"], CORE_PRINT_DEPS),
 ]
 
 dt_plugin_modules(
@@ -1469,7 +1496,7 @@ cc_binary(
     deps = [
         ":darktable_public_headers",
         ":darktable_shared",
-    ] + PUBLIC_HEADER_DEPS + LINUX_DESKTOP_MAP_DEPS + LINUX_DESKTOP_PRINT_DEPS,
+    ] + PUBLIC_HEADER_DEPS + CORE_PRINT_DEPS,
 )
 
 sh_test(
@@ -1543,7 +1570,7 @@ cc_library(
     ],
     linkstatic = True,
     textual_hdrs = ["iop/filmicrgb.c"],
-    deps = CORE_DEPS + [
+    deps = CORE_BASE_DEPS + [
         "@googletest//:gtest",
     ],
 )

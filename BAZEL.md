@@ -600,6 +600,14 @@ and runtime binaries plus plugins link against a `cc_import` wrapper for that
 shared core. Optional/system-feature-heavy core code is kept in separate
 subsystem targets where the boundary is natural: CUPS printing, gphoto2 camera
 control, and OpenCL runtime helpers.
+Core target dependencies are grouped by subsystem rather than routed through a
+single catch-all list. Use bundles such as `CORE_BASE_DEPS`,
+`CORE_METADATA_DEPS`, `CORE_IMAGEIO_DEPS`, `CORE_RAW_DEPS`, `CORE_CAMERA_DEPS`,
+`CORE_PRINT_DEPS`, `CORE_MAP_DEPS`, and `CORE_AI_DEPS` so optional or
+codec-heavy dependencies attach to the narrowest coherent target. Keep
+`PUBLIC_HEADER_DEPS` limited to dependencies exposed by public headers; for
+example, `views/view.h` exposes the map widget header when map support is
+enabled.
 Shared library links use `-Wl,-Bsymbolic` so C++ symbols from
 statically folded leaf libraries remain bound inside each DSO rather than being
 interposed across `libdarktable.so` and plugin `.so` files.

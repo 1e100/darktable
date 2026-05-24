@@ -121,7 +121,11 @@ bazel build --config=linux --copt=-DDT_BAZEL_SANDBOX_VERIFY //src:bazel_build_mi
   plugins, generated files, and runtime tree assembly. The core shared library
   is split into subsystem compile libraries; keep optional/system-feature-heavy
   code in natural targets such as printing, camera control, and OpenCL helpers
-  instead of folding it back into `darktable_common`.
+  instead of folding it back into `darktable_common`. Core dependencies are
+  grouped by subsystem bundles such as `CORE_METADATA_DEPS`,
+  `CORE_IMAGEIO_DEPS`, `CORE_RAW_DEPS`, `CORE_CAMERA_DEPS`, and
+  `CORE_PRINT_DEPS`; add migrated leaf deps to the narrowest coherent bundle or
+  target-specific `deps` instead of recreating a broad core dependency list.
 
 The transitional `pkg_config_repository` exposes a single `:pkg` target per
 repository. It shells out to `pkg-config`, splits compiler and linker flags, and
