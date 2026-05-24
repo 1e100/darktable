@@ -238,9 +238,10 @@ Optional desktop/system feature probes include:
   arranged plugin tree. `bazel_plugin_init_smoke_test` is a gtest fixture that
   runs real non-GUI `dt_init()` against the Bazel runtime tree and verifies
   initialized image I/O and IOP module registries. `bazel_cli_export_smoke_test`
-  exercises a real JPEG export through the arranged `darktable-cli`. Remaining
-  coverage should add CLI variants and carefully bounded GUI/view
-  initialization.
+  exercises a real JPEG export through the arranged `darktable-cli`.
+  `bazel_cli_runtime_variants_smoke_test` adds headless CLI help coverage and
+  JPEG/PNG export checks. Remaining coverage should add carefully bounded
+  GUI/view initialization.
 - Small legacy unit tests now have Bazel coverage through
   `darktable_cache_test`, `darktable_variables_test`, `sample_gtest`,
   `filmicrgb_gtest`, and optional `ai_backend_gtest`. Do not add cmocka to the
@@ -284,6 +285,7 @@ bazel test --config=linux //src:bazel_runtime_smoke_test
 bazel test --config=linux //src:bazel_plugin_load_smoke_test
 bazel test --config=linux //src:bazel_plugin_init_smoke_test
 bazel test --config=linux //src:bazel_cli_export_smoke_test
+bazel test --config=linux //src:bazel_cli_runtime_variants_smoke_test
 bazel test --config=linux //src:bazel_sqliteicu_smoke_test
 bazel test --config=linux //src:bazel_auxiliary_tools_smoke_test
 bazel-bin/src/darktable-runtime/bin/darktable-bazel --version

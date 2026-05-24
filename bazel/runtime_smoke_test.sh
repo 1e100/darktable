@@ -1,92 +1,68 @@
 #!/bin/sh
 set -eu
 
-fail() {
-  echo "runtime smoke test failed: $*" >&2
-  exit 1
+DT_SMOKE_NAME="runtime smoke test"
+
+script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+for helper in \
+  "$script_dir/runtime_test_lib.sh" \
+  "${TEST_SRCDIR:-}/${TEST_WORKSPACE:-}/bazel/runtime_test_lib.sh" \
+  "${TEST_SRCDIR:-}/_main/bazel/runtime_test_lib.sh"
+do
+  if [ -f "$helper" ]; then
+    . "$helper"
+    break
+  fi
+done
+command -v dt_smoke_fail >/dev/null 2>&1 || {
+  echo "$DT_SMOKE_NAME failed: could not locate runtime_test_lib.sh" >&2
+  exit 2
 }
 
 root_arg="${1:?missing runtime tree path}"
-
-resolve_runtime_root() {
-  for candidate in \
-    "$root_arg" \
-    "$PWD/$root_arg" \
-    "${TEST_SRCDIR:-}/${TEST_WORKSPACE:-}/$root_arg" \
-    "${TEST_SRCDIR:-}/$root_arg"
-  do
-    if [ -d "$candidate" ]; then
-      CDPATH= cd -- "$candidate" && pwd
-      return 0
-    fi
-  done
-  return 1
-}
-
-runtime_root="$(resolve_runtime_root)" || fail "could not locate runtime tree: $root_arg"
+runtime_root="$(dt_resolve_runtime_root "$root_arg")" || dt_smoke_fail "could not locate runtime tree: $root_arg"
 
 tmp="${TEST_TMPDIR:-/tmp}/darktable-runtime-smoke"
-rm -rf "$tmp"
-mkdir -p "$tmp/home" "$tmp/config" "$tmp/cache" "$tmp/data"
+dt_prepare_runtime_env "$runtime_root" "$tmp"
 
-export HOME="$tmp/home"
-export XDG_CONFIG_HOME="$tmp/config"
-export XDG_CACHE_HOME="$tmp/cache"
-export XDG_DATA_HOME="$tmp/data"
+dt_require_executable "bin/darktable"
+dt_require_executable "bin/darktable-cli"
+dt_require_executable "bin/darktable-chart"
+dt_require_executable "bin/darktable-generate-cache"
+dt_require_executable "bin/darktable-cmstest"
+dt_require_executable "bin/darktable-bazel"
+dt_require_executable "libexec/darktable/tools/darktable-curve-tool"
+dt_require_executable "libexec/darktable/tools/darktable-curve-tool-helper"
+dt_require_executable "libexec/darktable/tools/darktable-gen-noiseprofile"
+dt_require_executable "libexec/darktable/tools/darktable-noiseprofile"
 
-require_file() {
-  [ -f "$runtime_root/$1" ] || fail "missing file: $1"
-}
+dt_require_file "lib/darktable/libdarktable.so"
 
-require_dir() {
-  [ -d "$runtime_root/$1" ] || fail "missing directory: $1"
-}
+dt_require_dir "lib/darktable/views"
+dt_require_dir "lib/darktable/plugins"
+dt_require_dir "lib/darktable/plugins/lighttable"
+dt_require_dir "lib/darktable/plugins/imageio/format"
+dt_require_dir "lib/darktable/plugins/imageio/storage"
 
-require_executable() {
-  require_file "$1"
-  [ -x "$runtime_root/$1" ] || fail "not executable: $1"
-}
+dt_require_file "lib/darktable/views/libdarkroom.so"
+dt_require_file "lib/darktable/views/liblighttable.so"
+dt_require_file "lib/darktable/plugins/libexposure.so"
+dt_require_file "lib/darktable/plugins/lighttable/libcollect.so"
+dt_require_file "lib/darktable/plugins/imageio/format/libjpeg.so"
+dt_require_file "lib/darktable/plugins/imageio/storage/libdisk.so"
+dt_require_file "lib/darktable/libgphoto2/2.5.33/ptp2.so"
+dt_require_file "lib/darktable/libgphoto2_port/0.12.2/usb1.so"
 
-require_executable "bin/darktable"
-require_executable "bin/darktable-cli"
-require_executable "bin/darktable-chart"
-require_executable "bin/darktable-generate-cache"
-require_executable "bin/darktable-cmstest"
-require_executable "bin/darktable-bazel"
-require_executable "libexec/darktable/tools/darktable-curve-tool"
-require_executable "libexec/darktable/tools/darktable-curve-tool-helper"
-require_executable "libexec/darktable/tools/darktable-gen-noiseprofile"
-require_executable "libexec/darktable/tools/darktable-noiseprofile"
-
-require_file "lib/darktable/libdarktable.so"
-
-require_dir "lib/darktable/views"
-require_dir "lib/darktable/plugins"
-require_dir "lib/darktable/plugins/lighttable"
-require_dir "lib/darktable/plugins/imageio/format"
-require_dir "lib/darktable/plugins/imageio/storage"
-
-require_file "lib/darktable/views/libdarkroom.so"
-require_file "lib/darktable/views/liblighttable.so"
-require_file "lib/darktable/plugins/libexposure.so"
-require_file "lib/darktable/plugins/lighttable/libcollect.so"
-require_file "lib/darktable/plugins/imageio/format/libjpeg.so"
-require_file "lib/darktable/plugins/imageio/storage/libdisk.so"
-require_file "lib/darktable/libgphoto2/2.5.33/ptp2.so"
-require_file "lib/darktable/libgphoto2_port/0.12.2/usb1.so"
-
-require_dir "share/darktable"
-require_file "share/darktable/rawspeed/cameras.xml"
-require_file "share/darktable/icu/icudt78l.dat"
-require_file "share/darktable/darktablerc"
-require_file "share/darktable/darktableconfig.xml"
-require_file "share/darktable/tools/basecurve/plot.basecurve"
-require_file "share/darktable/tools/basecurve/plot.tonecurve"
-require_file "share/lensfun/version_1/timestamp.txt"
-require_file "share/lensfun/version_1/slr-canon.xml"
-require_dir "share/locale"
-
-export ICU_DATA="$runtime_root/share/darktable/icu"
+dt_require_dir "share/darktable"
+dt_require_file "share/darktable/rawspeed/cameras.xml"
+dt_require_file "share/darktable/icu/icudt78l.dat"
+dt_require_file "share/darktable/darktablerc"
+dt_require_file "share/darktable/darktableconfig.xml"
+dt_require_file "share/darktable/tools/basecurve/plot.basecurve"
+dt_require_file "share/darktable/tools/basecurve/plot.tonecurve"
+dt_require_file "share/lensfun/version_1/timestamp.txt"
+dt_require_file "share/lensfun/version_1/slr-canon.xml"
+dt_require_dir "share/locale"
 
 run_and_expect() {
   label="$1"
@@ -100,7 +76,7 @@ run_and_expect() {
 
   printf "%s\n" "$output" | grep -F "$pattern" >/dev/null || {
     printf "%s\n" "$output" >&2
-    fail "$label output did not contain '$pattern'"
+    dt_smoke_fail "$label output did not contain '$pattern'"
   }
 
   case "$label:$status" in
@@ -108,7 +84,7 @@ run_and_expect() {
       ;;
     *)
       printf "%s\n" "$output" >&2
-      fail "$label exited with unexpected status $status"
+      dt_smoke_fail "$label exited with unexpected status $status"
       ;;
   esac
 }

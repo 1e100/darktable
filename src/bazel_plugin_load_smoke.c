@@ -12,6 +12,7 @@ typedef struct plugin_group_t
 {
   const char *subdir;
   const char *const *required_symbols;
+  const char *const *required_plugins;
 } plugin_group_t;
 
 static const char *const common_symbols[] = {
@@ -75,12 +76,43 @@ static const char *const storage_symbols[] = {
   NULL,
 };
 
+static const char *const view_plugins[] = {
+  "libdarkroom.so",
+  "liblighttable.so",
+  "libslideshow.so",
+  "libtethering.so",
+  NULL,
+};
+
+static const char *const iop_plugins[] = {
+  "libexposure.so",
+  "libfilmicrgb.so",
+  "liblens.so",
+  NULL,
+};
+
+static const char *const lighttable_plugins[] = {
+  "libcollect.so",
+  NULL,
+};
+
+static const char *const format_plugins[] = {
+  "libjpeg.so",
+  "libpng.so",
+  NULL,
+};
+
+static const char *const storage_plugins[] = {
+  "libdisk.so",
+  NULL,
+};
+
 static const plugin_group_t plugin_groups[] = {
-  { "lib/darktable/views", common_symbols },
-  { "lib/darktable/plugins", iop_symbols },
-  { "lib/darktable/plugins/lighttable", lighttable_symbols },
-  { "lib/darktable/plugins/imageio/format", format_symbols },
-  { "lib/darktable/plugins/imageio/storage", storage_symbols },
+  { "lib/darktable/views", common_symbols, view_plugins },
+  { "lib/darktable/plugins", iop_symbols, iop_plugins },
+  { "lib/darktable/plugins/lighttable", lighttable_symbols, lighttable_plugins },
+  { "lib/darktable/plugins/imageio/format", format_symbols, format_plugins },
+  { "lib/darktable/plugins/imageio/storage", storage_symbols, storage_plugins },
 };
 
 static int is_directory(const char *path)
@@ -151,6 +183,15 @@ static int check_symbols(void *handle, const char *path, const char *const *symb
   return failures;
 }
 
+static int required_plugin_loaded(const char *name, char loaded_plugins[][NAME_MAX + 1], size_t loaded_count)
+{
+  for(size_t i = 0; i < loaded_count; i++)
+  {
+    if(strcmp(name, loaded_plugins[i]) == 0) return 1;
+  }
+  return 0;
+}
+
 static int check_plugin_group(const char *runtime_root, const plugin_group_t *group, int *loaded)
 {
   char dir_path[PATH_MAX];
@@ -169,6 +210,8 @@ static int check_plugin_group(const char *runtime_root, const plugin_group_t *gr
 
   int failures = 0;
   int group_loaded = 0;
+  char loaded_plugins[512][NAME_MAX + 1];
+  size_t loaded_plugin_count = 0;
 
   for(struct dirent *entry = readdir(dir); entry; entry = readdir(dir))
   {
@@ -192,6 +235,12 @@ static int check_plugin_group(const char *runtime_root, const plugin_group_t *gr
 
     failures += check_symbols(handle, plugin_path, group->required_symbols);
     dlclose(handle);
+    if(loaded_plugin_count < sizeof(loaded_plugins) / sizeof(loaded_plugins[0]))
+    {
+      snprintf(loaded_plugins[loaded_plugin_count], sizeof(loaded_plugins[loaded_plugin_count]),
+               "%s", entry->d_name);
+      loaded_plugin_count++;
+    }
     group_loaded++;
   }
 
@@ -201,6 +250,15 @@ static int check_plugin_group(const char *runtime_root, const plugin_group_t *gr
   {
     fprintf(stderr, "no plugins found in %s\n", dir_path);
     failures++;
+  }
+
+  for(const char *const *required = group->required_plugins; *required; required++)
+  {
+    if(!required_plugin_loaded(*required, loaded_plugins, loaded_plugin_count))
+    {
+      fprintf(stderr, "required plugin %s not loaded from %s\n", *required, dir_path);
+      failures++;
+    }
   }
 
   *loaded += group_loaded;

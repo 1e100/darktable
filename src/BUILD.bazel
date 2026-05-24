@@ -1330,14 +1330,30 @@ sh_test(
     name = "bazel_runtime_smoke_test",
     srcs = ["//bazel:runtime_smoke_test.sh"],
     args = ["$(rootpath :bazel_runtime_tree)"],
-    data = [":bazel_runtime_tree"],
+    data = [
+        ":bazel_runtime_tree",
+        "//bazel:runtime_test_lib.sh",
+    ],
 )
 
 sh_test(
     name = "bazel_cli_export_smoke_test",
     srcs = ["//bazel:cli_export_smoke_test.sh"],
     args = ["$(rootpath :bazel_runtime_tree)"],
-    data = [":bazel_runtime_tree"],
+    data = [
+        ":bazel_runtime_tree",
+        "//bazel:runtime_test_lib.sh",
+    ],
+)
+
+sh_test(
+    name = "bazel_cli_runtime_variants_smoke_test",
+    srcs = ["//bazel:cli_runtime_variants_smoke_test.sh"],
+    args = ["$(rootpath :bazel_runtime_tree)"],
+    data = [
+        ":bazel_runtime_tree",
+        "//bazel:runtime_test_lib.sh",
+    ],
 )
 
 sh_test(

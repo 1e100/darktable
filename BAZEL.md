@@ -143,6 +143,18 @@ isolates config/cache/data directories under `TEST_TMPDIR`, points all core
 runtime paths at the Bazel tree, and verifies that export exits cleanly and
 writes a JPEG.
 
+Additional headless CLI runtime variants are covered by:
+
+```sh
+bazel test --config=linux //src:bazel_cli_runtime_variants_smoke_test
+```
+
+This test shares the same isolated runtime setup, exercises `darktable-cli`
+help paths including the ICC option listings, and exports the bundled JPEG to
+both JPEG and PNG. It verifies the output magic bytes for each format, so the
+test covers a broader slice of the packaged image I/O plugins without starting
+GTK or initializing views.
+
 SQLite ICU integration has a narrower smoke test:
 
 ```sh
