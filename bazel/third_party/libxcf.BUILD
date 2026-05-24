@@ -12,5 +12,6 @@ cc_library(
         "xcf.h",
         "xcf_names.h",
     ],
+    copts = ["-D_GNU_SOURCE"],
     linkopts = ["-lz", "-lm"],
 )
