@@ -1,7 +1,7 @@
 load("//bazel:darktable_gen.bzl", "darktable_generated_headers")
 load("//bazel:dt_cc.bzl", "dt_core_lib", "dt_iop_modules", "dt_output_plugin_modules", "dt_plugin_group", "dt_plugin_modules", "dt_plugin_runtime_layout")
 load("//bazel:dt_runtime.bzl", "dt_runtime_tree")
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_import", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_import", "cc_library", "cc_test")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -1134,6 +1134,14 @@ sh_test(
         ":bazel_runtime_tree",
         ":bazel_sqliteicu_smoke",
     ],
+)
+
+cc_test(
+    name = "bazel_plugin_load_smoke_test",
+    srcs = ["bazel_plugin_load_smoke.c"],
+    args = ["$(rootpath :bazel_runtime_tree)"],
+    data = [":bazel_runtime_tree"],
+    linkopts = ["-ldl"],
 )
 
 filegroup(

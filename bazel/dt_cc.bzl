@@ -63,14 +63,14 @@ def dt_plugin_module(
     cc_binary(
         name = _plugin_target_name(name, output_name),
         srcs = [],
-        deps = [":%s_plugin_objects" % name] + link_deps,
+        deps = [":%s_plugin_objects" % name] + _unique(deps + link_deps),
         linkopts = linkopts + [
             "-shared",
             "-Wl,--unresolved-symbols=ignore-in-shared-libs",
             "-Wl,--allow-shlib-undefined",
         ],
         linkshared = True,
-        linkstatic = False,
+        linkstatic = True,
         features = ["-fully_static_link"],
         stamp = 0,
     )

@@ -98,6 +98,18 @@ This test validates representative runtime files, plugin directories, and early
 `--version` paths for the launcher and CLI-style binaries without requiring an
 X11 or Wayland session.
 
+The runtime tree also has a plugin loading smoke test:
+
+```sh
+bazel test --config=linux //src:bazel_plugin_load_smoke_test
+```
+
+This test scans the arranged plugin directories, `dlopen()`s every `lib*.so`
+using lazy/local binding like darktable's module loader, and checks the required
+API symbols for each plugin class. It is intentionally headless: it validates
+runtime linkability and module exports, but does not initialize plugin GUI
+state.
+
 SQLite ICU integration has a narrower smoke test:
 
 ```sh
@@ -438,8 +450,8 @@ The corresponding runtime layout targets are:
 a functional Bazel layout rather than trying to mirror every CMake install
 destination exactly. It also copies Bazel runfile shared libraries from Bazel's
 configuration-specific `_solib_*` directory into the stable arranged path
-`lib/darktable/bazel-solib` so plugin `.so` files can resolve their Bazel helper
-and external-library dependencies from the arranged runtime tree. The arranged
+`lib/darktable/bazel-solib` so plugin `.so` files can resolve Bazel-generated
+shared library dependencies from the arranged runtime tree. The arranged
 `lib/darktable/libdarktable.so` remains the plugin-facing core library; the
 runtime-tree copy intentionally skips Bazel's solib symlink for that file.
 
@@ -478,6 +490,8 @@ Notable details:
   from `src/librawspeed`.
 - `libraw.BUILD` generates a minimal `libraw/libraw_config.h` and builds
   LibRaw with the codecs needed by the current milestone.
+- `libxcf.BUILD` matches CMake's `_DEFAULT_SOURCE` compile definition so Linux
+  `htobe*` byte-order macros are visible.
 - `lua.BUILD` builds the vendored Lua library, excluding the standalone Lua
   command-line tools.
 - `lautoc.BUILD` builds LuaAutoC against the vendored Lua target.
