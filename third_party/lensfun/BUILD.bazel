@@ -1,0 +1,11 @@
+package(default_visibility = ["//visibility:public"])
+
+alias(
+    name = "lensfun",
+    actual = "@lensfun//:lensfun",
+)
+
+alias(
+    name = "lensfun_data",
+    actual = "@lensfun//:lensfun_data",
+)

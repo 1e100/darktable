@@ -115,6 +115,14 @@ http_archive(
     urls = ["https://github.com/unicode-org/icu/releases/download/release-78.2/icu4c-78.2-sources.tgz"],
 )
 
+http_archive(
+    name = "lensfun",
+    build_file = "//third_party/lensfun:lensfun.BUILD",
+    sha256 = "dafb39c08ef24a0e2abd00d05d7341b1bf1f0c38bfcd5a4c69cf5f0ecb6db112",
+    strip_prefix = "lensfun-0.3.4",
+    urls = ["https://github.com/lensfun/lensfun/archive/refs/tags/v0.3.4.tar.gz"],
+)
+
 pkg_config_repository(
     name = "gtk_stack",
     packages = [
@@ -142,7 +150,6 @@ pkg_config_repository(
     packages = [
         "libcurl >= 7.56",
         "exiv2 >= 0.27.2",
-        "lensfun",
         "libgphoto2 >= 2.5",
         "libjxl >= 0.7.0",
         "libjxl_threads",

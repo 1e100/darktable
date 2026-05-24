@@ -72,6 +72,8 @@ require_file "share/darktable/rawspeed/cameras.xml"
 require_file "share/darktable/icu/icudt78l.dat"
 require_file "share/darktable/darktablerc"
 require_file "share/darktable/darktableconfig.xml"
+require_file "share/lensfun/version_1/timestamp.txt"
+require_file "share/lensfun/version_1/slr-canon.xml"
 require_dir "share/locale"
 
 export ICU_DATA="$runtime_root/share/darktable/icu"

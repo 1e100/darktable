@@ -3375,6 +3375,9 @@ void init_global(dt_iop_module_so_t *self)
     // code for older Lensfun preserved as-is
 #ifdef LF_MAX_DATABASE_VERSION
     g_free(dt_iop_lensfun_db->HomeDataDir);
+    // The Bazel runtime intentionally relies on this fallback path. Its
+    // in-tree Lensfun build has invalid compiled-in system database paths, and
+    // packages the XML database next to darktable data under share/lensfun.
     dt_iop_lensfun_db->HomeDataDir = g_strdup(sysdbpath);
     if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
     {

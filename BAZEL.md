@@ -212,6 +212,15 @@ against mismatched ICU headers. The Bazel runtime tree packages `icudt78l.dat`
 from the ICU source release and the generated launcher exports `ICU_DATA` to
 that directory.
 
+Lensfun is pinned to the upstream 0.3.4 GitHub release because it is not
+available in BCR and darktable explicitly rejects the 0.3.95 development line.
+`//third_party/lensfun:lensfun` builds the small C++ library from source while
+using GLib from the existing GTK/GLib system boundary. The library's configured
+system database paths are intentionally invalid under Bazel so the runtime uses
+darktable's existing fallback to `share/lensfun/version_1` next to
+`share/darktable`; `//src:bazel_runtime_tree` packages the release XML database
+there.
+
 Little CMS and OpenJPEG are currently pinned source archives rather than BCR
 modules:
 
@@ -242,16 +251,16 @@ unmigrated dependencies through `pkg-config` so the Linux build can compile and
 link while native external repositories are added incrementally.
 
 The migrated leaf set is zlib, SQLite, pugixml, libpng, libjpeg-turbo, libxml2,
-WebP, libtiff, Little CMS, OpenJPEG, AVIF, HEIF, Imath, OpenEXR, and ICU.
+WebP, libtiff, Little CMS, OpenJPEG, AVIF, HEIF, Imath, OpenEXR, ICU, and
+Lensfun.
 RawSpeed and LibRaw now depend on the root-owned JPEG/zlib aliases instead of
 using `-ljpeg`, `-lz`, and the aggregate pkg-config probe.
 
 Leaf dependencies still flowing through the transitional probe include libcurl,
-Exiv2, lensfun, libgphoto2, JPEG XL, Wayland client symbols, GraphicsMagick,
-and similar libraries. Wayland remains system-provided with GTK/GDK because the
-code uses it as part of the GTK desktop backend boundary rather than as an
-isolated leaf library. `TODO.md` tracks which of the remaining dependencies are
-good candidates for later pinned source builds.
+Exiv2, libgphoto2, JPEG XL, Wayland client symbols, GraphicsMagick, and similar
+libraries. Wayland remains system-provided with GTK/GDK because the code uses it
+as part of the GTK desktop backend boundary rather than as an isolated leaf
+library.
 
 ## pkg-config Rule
 

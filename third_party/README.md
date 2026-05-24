@@ -10,5 +10,6 @@ rather than on provider-specific external repository labels. If a dependency is
 not available in BCR, add the source/build overlay under `third_party/<name>/`
 and document why it is local.
 
-GTK and closely coupled desktop libraries remain system dependencies.
-
+GTK and closely coupled desktop libraries remain system dependencies. Pinned
+source leaves that still use GLib should depend on the existing GTK/GLib
+boundary rather than adding a second broad desktop dependency set.

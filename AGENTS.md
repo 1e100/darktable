@@ -120,7 +120,7 @@ The current leaf dependencies modeled under Bazel are:
 
 - BCR modules: zlib, SQLite, pugixml, libpng, libjpeg-turbo, libxml2, WebP,
   libtiff, AVIF, HEIF, Imath, OpenEXR, and ICU.
-- Pinned source archives: Little CMS and OpenJPEG.
+- Pinned source archives: Little CMS, OpenJPEG, and Lensfun.
 - Existing vendored local repositories: whereami, libxcf, Lua, LuaAutoC,
   LibRaw, and RawSpeed.
 
@@ -132,6 +132,8 @@ Root-owned aliases currently include:
 - `//third_party/imath:imath`
 - `//third_party/jpeg:jpeg`
 - `//third_party/lcms2:lcms2`
+- `//third_party/lensfun:lensfun`
+- `//third_party/lensfun:lensfun_data`
 - `//third_party/openexr:openexr`
 - `//third_party/openjpeg:openjpeg`
 - `//third_party/png:png`
@@ -159,7 +161,6 @@ Remaining transitional probe dependencies include:
 
 - libcurl
 - Exiv2
-- lensfun
 - libgphoto2
 - JPEG XL
 - GraphicsMagick
@@ -187,12 +188,13 @@ Optional desktop/system feature probes include:
 - ICU is wired as a narrow aggregate for `src/common/sqliteicu.c`. The runtime
   tree packages `icudt78l.dat`, and the Bazel launcher exports `ICU_DATA` so
   SQLite ICU collation initialization can find the data file.
+- Lensfun is pinned to upstream 0.3.4 with a local BUILD overlay. It uses GLib
+  from the existing GTK/GLib system boundary and packages the XML database under
+  `share/lensfun/version_1` in the Bazel runtime tree.
 
 ## Remaining Work
 
-- Continue evaluating manageable leaf dependencies for in-tree builds. Lensfun
-  is the most plausible remaining candidate, but it needs runtime database
-  packaging in addition to the library.
+- Continue evaluating manageable leaf dependencies for in-tree builds.
 - Defer broad or gnarly stacks: GTK/Cairo/Pango/Rsvg/GLib, libgphoto2,
   Wayland/desktop integration, Exiv2, libcurl/TLS, GraphicsMagick, and JPEG XL.
 - Expand `linux_full` feature coverage: map/OSMGpsMap, print/CUPS,
