@@ -225,5 +225,6 @@ For runtime-layout changes, also run:
 
 ```sh
 bazel build --config=linux //src:bazel_runtime_tree
+bazel test --config=linux //src:bazel_runtime_smoke_test
 bazel-bin/src/darktable-runtime/bin/darktable-bazel --version
 ```

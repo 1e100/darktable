@@ -78,6 +78,16 @@ The launcher in the runtime tree passes `--moduledir`, `--datadir`, and
 bazel-bin/src/darktable-runtime/bin/darktable-bazel --version
 ```
 
+The runtime tree also has a non-GUI smoke test:
+
+```sh
+bazel test --config=linux //src:bazel_runtime_smoke_test
+```
+
+This test validates representative runtime files, plugin directories, and early
+`--version` paths for the launcher and CLI-style binaries without requiring an
+X11 or Wayland session.
+
 `//src:darktable-bazel` also emits `bazel-bin/src/darktable-bazel`, a small
 wrapper that forwards to the launcher inside the runtime tree.
 
@@ -115,6 +125,7 @@ refer to host system headers and libraries.
 
 - `rules_cc` for C/C++ rules.
 - `rules_pkg` for future packaging work.
+- `rules_shell` for shell smoke tests.
 - Bazel Central Registry modules for migrated leaf libraries: `zlib`,
   `sqlite3`, `pugixml`, `libpng`, `libjpeg_turbo`, `libxml2`, `libwebp`,
   `libtiff`, `libavif`, `libheif`, `imath`, `openexr`, and `icu`.
